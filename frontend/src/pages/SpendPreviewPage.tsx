@@ -161,14 +161,14 @@ export const SpendPreviewPage: React.FC = () => {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <div className="inline-flex items-center space-x-2 text-indigo-400 text-xs font-mono font-medium mb-1">
-          <Sparkles className="w-4 h-4" />
+        <div className="inline-flex items-center space-x-2 text-blue-600 dark:text-indigo-400 text-xs font-mono font-bold mb-1">
+          <Sparkles className="w-4 h-4 text-blue-600 dark:text-indigo-400" />
           <span>SPEND BEFORE YOU SPEND ENGINE</span>
         </div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-black dark:text-white tracking-tight">
           Spend Decision Preview Simulator
         </h1>
-        <p className="text-xs md:text-sm text-slate-400 max-w-2xl">
+        <p className="text-xs md:text-sm text-black dark:text-slate-400 max-w-2xl font-medium">
           Test proposed spending in real-time. The central authoritative engine recalculates budget ceilings, existing actuals, outstanding commitments, and approval thresholds before money is spent.
         </p>
       </div>
@@ -189,10 +189,10 @@ export const SpendPreviewPage: React.FC = () => {
         {/* Left Form: Proposed Parameters (5 Cols) */}
         <div className="glass-panel p-6 rounded-2xl border border-slate-800 lg:col-span-5 space-y-5">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+            <h2 className="text-sm font-bold text-black dark:text-white uppercase tracking-wider font-mono">
               Proposed Spend Parameters
             </h2>
-            <span className="text-[11px] font-mono text-indigo-400">Department: {user?.department?.name || 'Assigned Scope'}</span>
+            <span className="text-[11px] font-mono text-blue-600 dark:text-indigo-400 font-bold">Department: {user?.department?.name || 'Assigned Scope'}</span>
           </div>
 
           <div className="space-y-4">

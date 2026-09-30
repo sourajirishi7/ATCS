@@ -54,11 +54,11 @@ export const SpendRequestsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
-            <FileSpreadsheet className="w-6 h-6 text-indigo-400" />
+          <h1 className="text-2xl font-extrabold text-black dark:text-white tracking-tight flex items-center gap-2.5">
+            <FileSpreadsheet className="w-6 h-6 text-blue-600 dark:text-indigo-400" />
             <span>Spending Requests Ledger</span>
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-black dark:text-slate-400 font-medium">
             Every proposed spend evaluated by the SpendDecisionEngine with an immutable calculation snapshot.
           </p>
         </div>
@@ -66,13 +66,13 @@ export const SpendRequestsPage: React.FC = () => {
         <div className="flex items-center space-x-3">
           <button
             onClick={fetchRequests}
-            className="p-2.5 rounded-xl bg-navy-900 border border-slate-700/80 text-slate-300 hover:text-white"
+            className="p-2.5 rounded-xl bg-white dark:bg-navy-900 border border-slate-200 dark:border-slate-700/80 text-black dark:text-slate-300 hover:text-blue-600 dark:hover:text-white"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
           <Link
             to="/spend/preview"
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-glow transition-all"
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-glow transition-all"
           >
             <Plus className="w-4 h-4" />
             <span>New Spend Simulation</span>

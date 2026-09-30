@@ -103,16 +103,16 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-6">
         <div>
-          <div className="flex items-center space-x-2 text-indigo-400 text-xs font-mono font-medium mb-1">
-            <ShieldCheck className="w-4 h-4" />
+          <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 text-xs font-mono font-bold mb-1">
+            <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span>CENTRAL FINANCIAL CONTROL DESK</span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-black dark:text-white tracking-tight">
             Financial Health & Utilization
           </h1>
-          <p className="text-xs md:text-sm text-slate-400">
+          <p className="text-xs md:text-sm text-black dark:text-slate-400 font-medium">
             Real-time authoritative calculations backed by PostgreSQL ACID transactions and row-level serialization.
           </p>
         </div>
@@ -249,14 +249,14 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-mono font-semibold uppercase text-indigo-400">
+              <span className="text-xs font-mono font-bold uppercase text-blue-600 dark:text-indigo-400">
                 Client Quotation & Proposed Budget Performance
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold">
                 Live Telemetry
               </span>
             </div>
-            <div className="text-sm font-semibold text-white mt-0.5">
+            <div className="text-sm font-semibold text-black dark:text-white mt-0.5">
               Track client quotations (Gross, Net, Leftover Budget, Profit % & Completion Estimates) across all departments.
             </div>
           </div>
@@ -264,7 +264,7 @@ export const DashboardPage: React.FC = () => {
 
         <Link
           to="/client-budget"
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/20 flex items-center space-x-1.5 shrink-0 self-start md:self-auto"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center space-x-1.5 shrink-0 self-start md:self-auto"
         >
           <span>Open Client Quotation Hub</span>
           <ArrowUpRight className="w-3.5 h-3.5" />
@@ -277,10 +277,10 @@ export const DashboardPage: React.FC = () => {
         <div className="glass-panel p-6 rounded-2xl border border-slate-800 lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-indigo-400" /> Department Utilization Comparison
+              <h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
+                <Building2 className="w-4 h-4 text-blue-600 dark:text-indigo-400" /> Department Utilization Comparison
               </h2>
-              <p className="text-xs text-slate-400">Budget vs (Actual + Committed) by Department</p>
+              <p className="text-xs text-black dark:text-slate-400 font-medium">Budget vs (Actual + Committed) by Department</p>
             </div>
           </div>
 
@@ -301,7 +301,7 @@ export const DashboardPage: React.FC = () => {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-48 flex items-center justify-center text-xs text-slate-400">
+            <div className="h-48 flex items-center justify-center text-xs text-black dark:text-slate-400">
               No departmental budget data recorded yet.
             </div>
           )}
@@ -310,10 +310,10 @@ export const DashboardPage: React.FC = () => {
         {/* Category Breakdown Donut Chart (5 Cols) */}
         <div className="glass-panel p-6 rounded-2xl border border-slate-800 lg:col-span-5 space-y-4">
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Layers className="w-4 h-4 text-cyan-400" /> Category Spend Distribution
+            <h2 className="text-base font-bold text-black dark:text-white flex items-center gap-2">
+              <Layers className="w-4 h-4 text-blue-600 dark:text-cyan-400" /> Category Spend Distribution
             </h2>
-            <p className="text-xs text-slate-400">Obligated spend across active expense categories</p>
+            <p className="text-xs text-black dark:text-slate-400 font-medium">Obligated spend across active expense categories</p>
           </div>
 
           {data?.categories && data.categories.length > 0 ? (
