@@ -27,9 +27,9 @@ export const SpendPreviewPage: React.FC = () => {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [amount, setAmount] = useState<number | string>(20000);
-  const [vendor, setVendor] = useState('DataDog APM Cloud');
-  const [description, setDescription] = useState('Monthly enterprise infrastructure observability licenses');
+  const [amount, setAmount] = useState<number | string>('');
+  const [vendor, setVendor] = useState('');
+  const [description, setDescription] = useState('');
   
   const [preview, setPreview] = useState<DecisionEvaluationOutput | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);

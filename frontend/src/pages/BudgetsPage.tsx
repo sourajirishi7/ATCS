@@ -15,7 +15,7 @@ export const BudgetsPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [deptId, setDeptId] = useState('');
   const [fiscalPeriod, setFiscalPeriod] = useState('FY2026-Q4');
-  const [budgetAmount, setBudgetAmount] = useState<number>(500000);
+  const [budgetAmount, setBudgetAmount] = useState<number | string>('');
   const [allocations, setAllocations] = useState<Record<string, number>>({});
   const [formError, setFormError] = useState<string | null>(null);
 

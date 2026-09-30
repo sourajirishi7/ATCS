@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Layout } from './components/layout/Layout';
 
 // Pages
@@ -42,40 +43,42 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <SocketProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
+      <ThemeProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
 
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="spend/preview" element={<SpendPreviewPage />} />
-              <Route path="spend" element={<SpendRequestsPage />} />
-              <Route path="approvals" element={<ApprovalsPage />} />
-              <Route path="budgets" element={<BudgetsPage />} />
-              <Route path="client-budget" element={<ClientBudgetPage />} />
-              <Route path="transactions" element={<TransactionsPage />} />
-              <Route path="commitments" element={<CommitmentsPage />} />
-              <Route path="forecasts" element={<ForecastsPage />} />
-              <Route path="alerts" element={<AlertsPage />} />
-              <Route path="audit" element={<AuditPage />} />
-              <Route path="exceptions" element={<ExceptionsPage />} />
-              <Route path="rules" element={<RulesPage />} />
-              <Route path="sandbox" element={<SandboxPage />} />
-            </Route>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="spend/preview" element={<SpendPreviewPage />} />
+                <Route path="spend" element={<SpendRequestsPage />} />
+                <Route path="approvals" element={<ApprovalsPage />} />
+                <Route path="budgets" element={<BudgetsPage />} />
+                <Route path="client-budget" element={<ClientBudgetPage />} />
+                <Route path="transactions" element={<TransactionsPage />} />
+                <Route path="commitments" element={<CommitmentsPage />} />
+                <Route path="forecasts" element={<ForecastsPage />} />
+                <Route path="alerts" element={<AlertsPage />} />
+                <Route path="audit" element={<AuditPage />} />
+                <Route path="exceptions" element={<ExceptionsPage />} />
+                <Route path="rules" element={<RulesPage />} />
+                <Route path="sandbox" element={<SandboxPage />} />
+              </Route>
 
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </SocketProvider>
-      </AuthProvider>
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </SocketProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 };

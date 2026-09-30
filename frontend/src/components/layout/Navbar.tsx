@@ -1,12 +1,13 @@
-import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import { useTheme } from '../../context/ThemeContext';
 import { RoleType } from '../../types';
-import { ShieldCheck, Radio, LogOut, User as UserIcon, RefreshCw, Zap } from 'lucide-react';
+import { ShieldCheck, Radio, LogOut, User as UserIcon, RefreshCw, Zap, Sun, Moon } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, quickSwitchRole, logout, loading } = useAuth();
   const { connected } = useSocket();
+  const { theme, toggleTheme } = useTheme();
 
   const rolePills: Array<{ role: RoleType; label: string; badge: string; color: string }> = [
     { role: 'ADMIN', label: 'Admin (Alex)', badge: 'Admin', color: 'border-purple-500/40 text-purple-300 hover:bg-purple-500/10' },
@@ -80,6 +81,17 @@ export const Navbar: React.FC = () => {
                 {user.department && <span>• {user.department.code}</span>}
               </div>
             </div>
+            <button
+              onClick={toggleTheme}
+              title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
+              className="p-2 rounded-lg bg-navy-800 hover:bg-navy-700 text-slate-300 hover:text-white transition-colors border border-slate-700 flex items-center justify-center"
+            >
+              {theme === 'light' ? (
+                <Moon className="w-4 h-4 text-indigo-400" />
+              ) : (
+                <Sun className="w-4 h-4 text-amber-400" />
+              )}
+            </button>
             <button
               onClick={logout}
               title="Sign Out"
