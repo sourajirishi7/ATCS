@@ -19,6 +19,7 @@ import { AuditPage } from './pages/AuditPage';
 import { ExceptionsPage } from './pages/ExceptionsPage';
 import { RulesPage } from './pages/RulesPage';
 import { SandboxPage } from './pages/SandboxPage';
+import { ClientBudgetPage } from './pages/ClientBudgetPage';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -60,6 +61,7 @@ export const App: React.FC = () => {
               <Route path="spend" element={<SpendRequestsPage />} />
               <Route path="approvals" element={<ApprovalsPage />} />
               <Route path="budgets" element={<BudgetsPage />} />
+              <Route path="client-budget" element={<ClientBudgetPage />} />
               <Route path="transactions" element={<TransactionsPage />} />
               <Route path="commitments" element={<CommitmentsPage />} />
               <Route path="forecasts" element={<ForecastsPage />} />

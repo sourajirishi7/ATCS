@@ -59,8 +59,9 @@ model Department {
   transactions     Transaction[]
   alerts           Alert[]
   forecasts        Forecast[]
-  approvalRules    ApprovalRule[]
-  createdAt        DateTime          @default(now())
+  approvalRules        ApprovalRule[]
+  quotationAllocations ClientQuotationAllocation[]
+  createdAt            DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 }
 
@@ -357,4 +358,40 @@ model DecisionSnapshot {
 
   @@index([decision])
   @@index([calculatedAt])
+}
+
+// -------------------------------------------------------------
+// 8. CLIENT QUOTATION & PROPOSED BUDGET DOMAIN
+// -------------------------------------------------------------
+
+model ClientQuotation {
+  id                    String                      @id @default(uuid())
+  clientName            String
+  projectName           String
+  quotationReference    String                      @unique
+  proposedBudget        Decimal
+  currency              String                      @default("INR")
+  targetProfitMarginPct Decimal                     @default(20.0)
+  status                String                      @default("ACTIVE") // DRAFT, ACTIVE, COMPLETED, ARCHIVED
+  validUntil            DateTime?
+  notes                 String?
+  allocations           ClientQuotationAllocation[]
+  createdAt             DateTime                    @default(now())
+  updatedAt             DateTime                    @updatedAt
+}
+
+model ClientQuotationAllocation {
+  id              String          @id @default(uuid())
+  quotationId     String
+  quotation       ClientQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  departmentId    String
+  department      Department      @relation(fields: [departmentId], references: [id])
+  allocatedAmount Decimal
+  targetMarginPct Decimal         @default(20.0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@unique([quotationId, departmentId])
+  @@index([quotationId])
+  @@index([departmentId])
 }

@@ -334,6 +334,36 @@ async function main() {
     }
   }
 
+  // 9. Seed Default Client Quotation / Proposed Budget
+  const existingQuotation = await prisma.clientQuotation.findUnique({
+    where: { quotationReference: 'QT-2026-APEX-001' },
+  });
+
+  if (!existingQuotation) {
+    await prisma.clientQuotation.create({
+      data: {
+        clientName: 'Apex Global Enterprises',
+        projectName: 'Enterprise Cloud Transformation & Modernization',
+        quotationReference: 'QT-2026-APEX-001',
+        proposedBudget: new Decimal(2500000),
+        currency: 'INR',
+        targetProfitMarginPct: new Decimal(25.0),
+        status: 'ACTIVE',
+        notes: 'Governing client contract quotation for FY2026-Q3 delivery milestones.',
+        allocations: {
+          create: [
+            { departmentId: deptMap['ENG'], allocatedAmount: new Decimal(1125000), targetMarginPct: new Decimal(25.0) },
+            { departmentId: deptMap['MKT'], allocatedAmount: new Decimal(625000), targetMarginPct: new Decimal(25.0) },
+            { departmentId: deptMap['OPS'], allocatedAmount: new Decimal(375000), targetMarginPct: new Decimal(25.0) },
+            { departmentId: deptMap['SLS'], allocatedAmount: new Decimal(250000), targetMarginPct: new Decimal(25.0) },
+            { departmentId: deptMap['HR'],  allocatedAmount: new Decimal(125000), targetMarginPct: new Decimal(25.0) },
+          ],
+        },
+      },
+    });
+    console.log('✅ Baseline Client Quotation & Department Allocations seeded (₹25,00,000)');
+  }
+
   console.log('🎉 ATCS Enterprise Database Seeding Completed Successfully!');
 }
 

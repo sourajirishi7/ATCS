@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   Sliders,
   FlaskConical,
+  Briefcase,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -34,6 +35,7 @@ export const Sidebar: React.FC = () => {
       title: 'FINANCIAL CONTROL',
       items: [
         { to: '/budgets', label: 'Budgets & Allocations', icon: PieChart },
+        { to: '/client-budget', label: 'Client Quotation & Budget', icon: Briefcase, badge: 'New' },
         { to: '/transactions', label: 'Transaction Ledger', icon: Receipt },
         { to: '/commitments', label: 'Active Commitments', icon: Lock },
       ],

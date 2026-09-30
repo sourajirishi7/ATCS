@@ -339,6 +339,20 @@ All demo users share the password: `password123`
   - Utilization warnings (>80%, >95%) trigger real-time toast alerts for Finance admins.
   - Transaction settlements update live dashboard charts without page refresh.
 
+### 5. Client Quotation & Proposed Budget Performance Hub (`/client-budget`)
+- **Preemptive Quotation Governance**: Track client or contract-level proposed budgets (e.g. ₹25,00,000 baseline) and observe financial performance across the enterprise.
+- **Key Metrics Tracked**:
+  - **Gross Proposed Budget**: Total quoted contract value.
+  - **Incurred Expenses**: Exact sum of actual settled transactions + active commitments.
+  - **Leftover Budget / Net Finances**: Remaining liquid capital and cash reserves ($Gross - Incurred$).
+  - **Profit Margin %**: Mathematical margin ($Net / Gross \times 100$) tracked against contract target margin.
+  - **Estimation of Completion**: Project burn velocity, Estimated Cost at Completion (EAC), Variance at Completion (VAC), and feasibility status (`HEALTHY_PROFIT`, `MARGIN_PRESSURE`, `BUDGET_OVERRUN_RISK`).
+- **Department-by-Department Individual Expense Matrix**:
+  - Full tracking for **every single department** (Engineering, Marketing, Operations, Sales, Human Resources).
+  - Department individual expenses: Actual Spend vs Committed Spend, Leftover Budget, Profit Margin %, Cost Share %, and department-level EAC.
+- **Interactive Quotation Simulator**:
+  - Test any hypothetical client proposed budget (e.g. ₹15L, ₹25L, ₹50L) with instant recalculation of profit margins, leftover capital, and department distributions.
+
 ---
 
 ## 📡 API Reference
@@ -371,7 +385,11 @@ All demo users share the password: `password123`
 ### Forecasting & Analytics
 - `GET /api/forecast?departmentId=...` — Query EWMA burn-rate and velocity projections
 - `POST /api/forecast/recalculate` — Trigger on-demand model re-run
-- `GET /api/dashboard/summary` — Aggregated executive KPI metrics
+### Client Quotations & Proposed Budget Tracking
+- `GET /api/client-budget` — Query active client quotation analytics, gross/net finances, and departmental expenses
+- `GET /api/client-budget/list` — List all stored client quotations
+- `POST /api/client-budget/simulate` — Real-time simulation of any proposed budget or quotation from client
+- `POST /api/client-budget` — Create and store new client quotation with department allocations
 
 ### Interactive Sandbox
 - `POST /api/sandbox/scenario/:scenarioType` — Execute Scenario A, B, or C with simulation flags

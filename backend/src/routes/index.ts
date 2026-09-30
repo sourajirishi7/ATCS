@@ -14,6 +14,7 @@ import auditRoutes from './audit.routes';
 import rulesRoutes from './rules.routes';
 import exceptionRoutes from './exception.routes';
 import sandboxRoutes from './sandbox.routes';
+import clientBudgetRoutes from './clientBudget.routes';
 
 const router = Router();
 
@@ -32,5 +33,6 @@ router.use('/audit-logs', auditRoutes);
 router.use('/rules', rulesRoutes);
 router.use('/exceptions', exceptionRoutes);
 router.use('/sandbox', sandboxRoutes);
+router.use('/client-budget', clientBudgetRoutes);
 
 export default router;
