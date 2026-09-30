@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { SpendingService } from '../services/SpendingService';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
-import { SpendingStatus } from '@prisma/client';
+import { SpendingStatus } from '../models/types';
 
 const router = Router();
 

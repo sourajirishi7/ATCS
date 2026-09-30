@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma, toDecimal } from '../prisma';
 import { authenticate, authorizeRoles } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
-import { RoleType } from '@prisma/client';
+import { RoleType } from '../models/types';
 import Decimal from 'decimal.js';
 
 const router = Router();

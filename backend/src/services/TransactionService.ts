@@ -4,7 +4,7 @@ import {
   TransactionSource,
   CommitmentStatus,
   AlertSeverity,
-} from '@prisma/client';
+} from '../models/types';
 import Decimal from 'decimal.js';
 import { AppError } from '../middleware/errorHandler';
 import { AuthUser } from '../middleware/auth';

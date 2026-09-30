@@ -4,7 +4,7 @@ import {
   SpendingStatus,
   CommitmentStatus,
   RoleType,
-} from '@prisma/client';
+} from '../models/types';
 import { AppError } from '../middleware/errorHandler';
 import { AuthUser } from '../middleware/auth';
 import { emitEvent } from '../socket';

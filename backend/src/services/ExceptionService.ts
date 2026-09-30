@@ -1,5 +1,5 @@
 import { prisma } from '../prisma';
-import { ExceptionDecision, SpendingStatus, CommitmentStatus, RoleType } from '@prisma/client';
+import { ExceptionDecision, SpendingStatus, CommitmentStatus, RoleType } from '../models/types';
 import { AuthUser } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
 import { AuditService } from './AuditService';

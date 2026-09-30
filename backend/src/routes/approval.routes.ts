@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ApprovalService } from '../services/ApprovalService';
 import { authenticate, authorizeRoles, AuthenticatedRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
-import { RoleType, ApprovalDecision } from '@prisma/client';
+import { RoleType, ApprovalDecision } from '../models/types';
 
 const router = Router();
 

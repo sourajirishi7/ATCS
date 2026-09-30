@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../prisma';
 import { authenticate, authorizeRoles } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
-import { RoleType } from '@prisma/client';
+import { RoleType } from '../models/types';
 import { AuditService } from '../services/AuditService';
 
 const router = Router();

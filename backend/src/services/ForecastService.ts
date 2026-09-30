@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { prisma, toDecimal, toDecimalNumber } from '../prisma';
-import { ForecastStatus } from '@prisma/client';
+import { ForecastStatus } from '../models/types';
 import Decimal from 'decimal.js';
 import { BudgetService } from './BudgetService';
 import { emitEvent } from '../socket';

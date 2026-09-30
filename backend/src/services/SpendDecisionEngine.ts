@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import { DecisionVerdict, RoleType } from '@prisma/client';
+import { DecisionVerdict, RoleType } from '../models/types';
 
 export interface DecisionEvaluationInput {
   employee: {

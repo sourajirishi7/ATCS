@@ -1,4 +1,5 @@
-import { PrismaClient, RoleType, BudgetStatus, SpendingStatus, CommitmentStatus, TransactionStatus, TransactionSource, DecisionVerdict } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { RoleType, BudgetStatus, SpendingStatus, CommitmentStatus, TransactionStatus, TransactionSource, DecisionVerdict } from '../src/models/types';
 import bcrypt from 'bcryptjs';
 import Decimal from 'decimal.js';
 

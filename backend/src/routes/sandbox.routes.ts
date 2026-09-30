@@ -3,7 +3,7 @@ import { prisma, toDecimal } from '../prisma';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { SpendDecisionEngine } from '../services/SpendDecisionEngine';
 import { SpendingService } from '../services/SpendingService';
-import { RoleType } from '@prisma/client';
+import { RoleType } from '../models/types';
 import Decimal from 'decimal.js';
 
 const router = Router();
@@ -116,7 +116,7 @@ router.post('/scenario/:scenarioType', authenticate, async (req: AuthenticatedRe
       },
       actualSpend: scenarioConfig.actual,
       committedSpend: scenarioConfig.committed,
-      approvalRules,
+      approvalRules: approvalRules.map((r) => ({ ...r, requiredRole: r.requiredRole as RoleType })),
       budgetRules,
     });
 

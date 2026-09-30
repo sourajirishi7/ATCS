@@ -7,7 +7,7 @@ import { TransactionService } from '../services/TransactionService';
 import { CsvIngestionService } from '../services/CsvIngestionService';
 import { authenticate, authorizeRoles, AuthenticatedRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
-import { RoleType } from '@prisma/client';
+import { RoleType } from '../models/types';
 
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { CommitmentService } from '../services/CommitmentService';
 import { authenticate, authorizeRoles, AuthenticatedRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
-import { RoleType, CommitmentStatus } from '@prisma/client';
+import { RoleType, CommitmentStatus } from '../models/types';
 
 const router = Router();
 

@@ -1,5 +1,5 @@
 import { prisma } from '../prisma';
-import { AlertSeverity, AlertStatus } from '@prisma/client';
+import { AlertSeverity, AlertStatus } from '../models/types';
 import { emitEvent } from '../socket';
 
 export interface CreateAlertInput {

@@ -1,5 +1,5 @@
 import { prisma, toDecimal } from '../prisma';
-import { TransactionSource, TransactionStatus } from '@prisma/client';
+import { TransactionSource, TransactionStatus } from '../models/types';
 import Decimal from 'decimal.js';
 import { AuthUser } from '../middleware/auth';
 import { AuditService } from './AuditService';

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '../prisma';
 import { authenticate, authorizeRoles, AuthenticatedRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
-import { RoleType, BudgetStatus } from '@prisma/client';
+import { RoleType, BudgetStatus } from '../models/types';
 import { BudgetService } from '../services/BudgetService';
 
 const router = Router();
@@ -25,7 +25,7 @@ const createBudgetSchema = z.object({
 router.get('/', authenticate, async (req: AuthenticatedRequest, res, next) => {
   try {
     const where: any = {};
-    if (req.user?.role === RoleType.MANAGER && req.user.departmentId) {
+    if (req.user && req.user.role === RoleType.MANAGER && req.user.departmentId) {
       where.departmentId = req.user.departmentId;
     }
 

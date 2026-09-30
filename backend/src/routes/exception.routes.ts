@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ExceptionService } from '../services/ExceptionService';
 import { authenticate, authorizeRoles, AuthenticatedRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
-import { RoleType, ExceptionDecision } from '@prisma/client';
+import { RoleType, ExceptionDecision } from '../models/types';
 
 const router = Router();
 

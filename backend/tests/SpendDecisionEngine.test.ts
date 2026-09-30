@@ -1,5 +1,5 @@
 import { SpendDecisionEngine } from '../src/services/SpendDecisionEngine';
-import { DecisionVerdict, RoleType } from '@prisma/client';
+import { DecisionVerdict, RoleType } from '../src/models/types';
 import Decimal from 'decimal.js';
 
 function assert(condition: boolean, message: string) {

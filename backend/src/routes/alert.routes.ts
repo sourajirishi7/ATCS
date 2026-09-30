@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { AlertService } from '../services/AlertService';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
-import { AlertSeverity, AlertStatus } from '@prisma/client';
+import { AlertSeverity, AlertStatus } from '../models/types';
 
 const router = Router();
 

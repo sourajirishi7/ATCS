@@ -1,5 +1,5 @@
 import { prisma, toDecimalNumber } from '../prisma';
-import { CommitmentStatus, RoleType } from '@prisma/client';
+import { CommitmentStatus, RoleType } from '../models/types';
 import { AuthUser } from '../middleware/auth';
 import { AppError } from '../middleware/errorHandler';
 import { AuditService } from './AuditService';

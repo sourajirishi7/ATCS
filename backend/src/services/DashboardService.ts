@@ -1,5 +1,5 @@
 import { prisma, toDecimalNumber } from '../prisma';
-import { BudgetStatus, SpendingStatus, DecisionVerdict } from '@prisma/client';
+import { BudgetStatus, SpendingStatus, DecisionVerdict } from '../models/types';
 import Decimal from 'decimal.js';
 import { AuthUser } from '../middleware/auth';
 

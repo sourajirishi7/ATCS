@@ -4,8 +4,8 @@ import {
   CommitmentStatus,
   DecisionVerdict,
   AlertSeverity,
-  Prisma,
-} from '@prisma/client';
+  RoleType,
+} from '../models/types';
 import Decimal from 'decimal.js';
 import { SpendDecisionEngine } from './SpendDecisionEngine';
 import { BudgetService } from './BudgetService';
@@ -100,7 +100,7 @@ export class SpendingService {
         : null,
       actualSpend: totals.actualSpend,
       committedSpend: totals.committedSpend,
-      approvalRules,
+      approvalRules: approvalRules.map((r) => ({ ...r, requiredRole: r.requiredRole as RoleType })),
       budgetRules,
     });
 
@@ -198,7 +198,7 @@ export class SpendingService {
           : null,
         actualSpend,
         committedSpend,
-        approvalRules,
+        approvalRules: approvalRules.map((r) => ({ ...r, requiredRole: r.requiredRole as RoleType })),
         budgetRules,
       });
 

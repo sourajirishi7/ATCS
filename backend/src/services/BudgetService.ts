@@ -1,5 +1,5 @@
 import { prisma, toDecimal, toDecimalNumber } from '../prisma';
-import { BudgetStatus } from '@prisma/client';
+import { BudgetStatus } from '../models/types';
 import Decimal from 'decimal.js';
 import { AppError } from '../middleware/errorHandler';
 import { AuditService } from './AuditService';
@@ -155,7 +155,7 @@ export class BudgetService {
       committedSpend: toDecimalNumber(deptTotals.committedSpend),
       availableBudget: toDecimalNumber(available),
       utilizationPercentage: Number(utilPct.toFixed(1)),
-      status: budget.status,
+      status: budget.status as BudgetStatus,
       categoryBreakdown,
     };
   }
