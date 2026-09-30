@@ -9,11 +9,31 @@ export const Navbar: React.FC = () => {
   const { connected } = useSocket();
   const { theme, toggleTheme } = useTheme();
 
-  const rolePills: Array<{ role: RoleType; label: string; badge: string; color: string }> = [
-    { role: 'ADMIN', label: 'Admin (Alex)', badge: 'Admin', color: 'border-purple-300 text-purple-700 bg-purple-50/70 hover:bg-purple-100 dark:border-purple-500/40 dark:text-purple-300 dark:bg-navy-900/50 dark:hover:bg-purple-500/10' },
-    { role: 'FINANCE', label: 'Finance (Fiona)', badge: 'CFO', color: 'border-emerald-300 text-emerald-700 bg-emerald-50/70 hover:bg-emerald-100 dark:border-emerald-500/40 dark:text-emerald-300 dark:bg-navy-900/50 dark:hover:bg-emerald-500/10' },
-    { role: 'MANAGER', label: 'Manager (Marcus)', badge: 'ENG Mgr', color: 'border-amber-300 text-amber-700 bg-amber-50/70 hover:bg-amber-100 dark:border-amber-500/40 dark:text-amber-300 dark:bg-navy-900/50 dark:hover:bg-amber-500/10' },
-    { role: 'EMPLOYEE', label: 'Employee (Devon)', badge: 'Staff Eng', color: 'border-cyan-300 text-cyan-700 bg-cyan-50/70 hover:bg-cyan-100 dark:border-cyan-500/40 dark:text-cyan-300 dark:bg-navy-900/50 dark:hover:bg-cyan-500/10' },
+  const rolePills: Array<{ role: RoleType; label: string; badge: string; inactive: string }> = [
+    {
+      role: 'ADMIN',
+      label: 'Admin (Alex)',
+      badge: 'Admin',
+      inactive: 'border-purple-300 text-purple-800 bg-purple-50 hover:bg-purple-100 dark:border-purple-500/40 dark:text-purple-300 dark:bg-navy-900/60 dark:hover:bg-purple-500/10',
+    },
+    {
+      role: 'FINANCE',
+      label: 'Finance (Fiona)',
+      badge: 'CFO',
+      inactive: 'border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-500/40 dark:text-emerald-300 dark:bg-navy-900/60 dark:hover:bg-emerald-500/10',
+    },
+    {
+      role: 'MANAGER',
+      label: 'Manager (Marcus)',
+      badge: 'ENG Mgr',
+      inactive: 'border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100 dark:border-amber-500/40 dark:text-amber-300 dark:bg-navy-900/60 dark:hover:bg-amber-500/10',
+    },
+    {
+      role: 'EMPLOYEE',
+      label: 'Employee (Devon)',
+      badge: 'Staff Eng',
+      inactive: 'border-cyan-300 text-cyan-800 bg-cyan-50 hover:bg-cyan-100 dark:border-cyan-500/40 dark:text-cyan-300 dark:bg-navy-900/60 dark:hover:bg-cyan-500/10',
+    },
   ];
 
   return (
@@ -58,10 +78,10 @@ export const Navbar: React.FC = () => {
               key={pill.role}
               onClick={() => quickSwitchRole(pill.role)}
               disabled={loading || isActive}
-              className={`text-xs px-2.5 py-1 rounded-lg transition-all duration-150 border font-medium ${
+              className={`text-xs px-2.5 py-1 rounded-lg transition-all duration-150 border font-semibold ${
                 isActive
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm dark:bg-indigo-600/30 dark:border-indigo-400 dark:text-white'
-                  : `${pill.color} bg-white dark:bg-navy-900/50`
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                  : pill.inactive
               }`}
             >
               {pill.label}

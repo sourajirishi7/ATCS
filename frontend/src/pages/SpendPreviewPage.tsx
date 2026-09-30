@@ -188,23 +188,23 @@ export const SpendPreviewPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Form: Proposed Parameters (5 Cols) */}
         <div className="glass-panel p-6 rounded-2xl border border-slate-800 lg:col-span-5 space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <h2 className="text-sm font-bold text-black dark:text-white uppercase tracking-wider font-mono">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider font-mono">
               Proposed Spend Parameters
             </h2>
-            <span className="text-[11px] font-mono text-blue-600 dark:text-indigo-400 font-bold">Department: {user?.department?.name || 'Assigned Scope'}</span>
+            <span className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 font-bold">Department: {user?.department?.name || 'Assigned Scope'}</span>
           </div>
 
           <div className="space-y-4">
             {/* Category Select */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-slate-400" /> Expense Category
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Expense Category
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-navy-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -216,11 +216,11 @@ export const SpendPreviewPage: React.FC = () => {
 
             {/* Requested Amount */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center justify-between">
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-slate-400" /> Proposed Amount (INR)
+                  <DollarSign className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Proposed Amount (INR)
                 </span>
-                <span className="text-[11px] text-slate-400 font-mono">Numeric Precision</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Numeric Precision</span>
               </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-2.5 text-slate-400 font-mono text-sm">₹</span>
@@ -231,7 +231,7 @@ export const SpendPreviewPage: React.FC = () => {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="20000"
-                  className="w-full pl-8 pr-4 py-2.5 bg-navy-950 border border-slate-800 rounded-xl text-sm font-mono text-white focus:outline-none focus:border-indigo-500 font-bold"
+                  className="w-full pl-8 pr-4 py-2.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-slate-800 rounded-xl text-sm font-mono text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-bold"
                 />
               </div>
               {/* Quick Preset Buttons */}
@@ -241,7 +241,7 @@ export const SpendPreviewPage: React.FC = () => {
                     key={preset}
                     type="button"
                     onClick={() => setAmount(preset)}
-                    className="text-[10px] font-mono px-2 py-1 rounded-md bg-navy-900 border border-slate-700/80 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+                    className="text-[10px] font-mono px-2 py-1 rounded-md bg-slate-100 dark:bg-navy-900 border border-slate-300 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-400 dark:hover:border-slate-500 transition-colors"
                   >
                     ₹{preset.toLocaleString()}
                   </button>
@@ -251,29 +251,29 @@ export const SpendPreviewPage: React.FC = () => {
 
             {/* Vendor Name */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Building className="w-3.5 h-3.5 text-slate-400" /> Vendor / Payee
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Vendor / Payee
               </label>
               <input
                 type="text"
                 value={vendor}
                 onChange={(e) => setVendor(e.target.value)}
                 placeholder="AWS, GitHub, Delta Air, etc."
-                className="w-full px-3.5 py-2.5 bg-navy-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-slate-400" /> Business Justification
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Business Justification
               </label>
               <textarea
                 rows={2}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Specify the business purpose of this expenditure..."
-                className="w-full px-3.5 py-2.5 bg-navy-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+                className="w-full px-3.5 py-2.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
               />
             </div>
 
@@ -312,7 +312,7 @@ export const SpendPreviewPage: React.FC = () => {
               {/* Verdict Header */}
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="p-3 rounded-2xl bg-navy-950 border border-slate-800 shadow-md">
+                  <div className="p-3 rounded-2xl bg-slate-100 dark:bg-navy-950 border border-slate-200 dark:border-slate-800 shadow-md">
                     <VerdictIcon className="w-8 h-8" />
                   </div>
                   <div>
@@ -329,44 +329,44 @@ export const SpendPreviewPage: React.FC = () => {
               </div>
 
               {/* Core Financial State Comparison Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-navy-950/80 border border-slate-800 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-50 dark:bg-navy-950/80 border border-slate-200 dark:border-slate-800 text-xs">
                 <div>
-                  <div className="text-[10px] font-mono text-slate-400 uppercase">Governing Budget</div>
-                  <div className="text-sm font-bold text-white mt-0.5">₹{preview.budgetAmount.toLocaleString()}</div>
+                  <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">Governing Budget</div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">₹{preview.budgetAmount.toLocaleString()}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] font-mono text-slate-400 uppercase">Actual Settled</div>
-                  <div className="text-sm font-bold text-cyan-400 mt-0.5">₹{preview.actualSpend.toLocaleString()}</div>
+                  <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">Actual Settled</div>
+                  <div className="text-sm font-bold text-cyan-600 dark:text-cyan-400 mt-0.5">₹{preview.actualSpend.toLocaleString()}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] font-mono text-slate-400 uppercase">Committed</div>
-                  <div className="text-sm font-bold text-indigo-400 mt-0.5">₹{preview.committedSpend.toLocaleString()}</div>
+                  <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">Committed</div>
+                  <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">₹{preview.committedSpend.toLocaleString()}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] font-mono text-slate-400 uppercase">Available Before</div>
-                  <div className="text-sm font-bold text-emerald-400 mt-0.5">₹{preview.availableBefore.toLocaleString()}</div>
+                  <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">Available Before</div>
+                  <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">₹{preview.availableBefore.toLocaleString()}</div>
                 </div>
               </div>
 
               {/* Spend Impact & Utilization Progress */}
-              <div className="space-y-3 p-4 rounded-xl bg-navy-900/60 border border-slate-800">
+              <div className="space-y-3 p-4 rounded-xl bg-slate-50 dark:bg-navy-900/60 border border-slate-200 dark:border-slate-800">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-200">Budget Utilization Impact</span>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">Budget Utilization Impact</span>
                   <div className="font-mono text-right">
-                    <span className="text-slate-400">{preview.utilizationBefore}%</span>
-                    <span className="text-indigo-400 mx-1.5 font-bold">→</span>
-                    <span className={`font-bold ${preview.utilizationAfter > 100 ? 'text-rose-400' : 'text-white'}`}>
+                    <span className="text-slate-500 dark:text-slate-400">{preview.utilizationBefore}%</span>
+                    <span className="text-indigo-600 dark:text-indigo-400 mx-1.5 font-bold">→</span>
+                    <span className={`font-bold ${preview.utilizationAfter > 100 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>
                       {preview.utilizationAfter}%
                     </span>
                   </div>
                 </div>
 
                 {/* Visual Before vs After bar */}
-                <div className="w-full h-3 bg-navy-950 rounded-full overflow-hidden p-0.5 border border-slate-800 flex">
+                <div className="w-full h-3 bg-slate-200 dark:bg-navy-950 rounded-full overflow-hidden p-0.5 border border-slate-300 dark:border-slate-800 flex">
                   {/* Current spend */}
                   <div
                     style={{ width: `${Math.min(preview.utilizationBefore, 100)}%` }}
-                    className="bg-indigo-500 h-full rounded-l-full"
+                    className="bg-indigo-600 dark:bg-indigo-500 h-full rounded-l-full"
                     title={`Current: ${preview.utilizationBefore}%`}
                   />
                   {/* Incremental proposed spend */}
@@ -374,15 +374,15 @@ export const SpendPreviewPage: React.FC = () => {
                     style={{
                       width: `${Math.min(Math.max(preview.utilizationAfter - preview.utilizationBefore, 0), 100 - Math.min(preview.utilizationBefore, 100))}%`,
                     }}
-                    className={`h-full ${preview.utilizationAfter > 100 ? 'bg-rose-500' : 'bg-emerald-400'}`}
+                    className={`h-full ${preview.utilizationAfter > 100 ? 'bg-rose-500' : 'bg-emerald-500'}`}
                     title={`Proposed: +${(preview.utilizationAfter - preview.utilizationBefore).toFixed(1)}%`}
                   />
                 </div>
 
                 {/* Calculation formula display */}
-                <div className="text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
                   <span>Projected Spend: ₹{preview.projectedSpend.toLocaleString()}</span>
-                  <span className={preview.remainingAfter < 0 ? 'text-rose-400 font-bold' : 'text-slate-300'}>
+                  <span className={preview.remainingAfter < 0 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-300'}>
                     Remaining Headroom: ₹{preview.remainingAfter.toLocaleString()}
                   </span>
                 </div>
@@ -390,15 +390,15 @@ export const SpendPreviewPage: React.FC = () => {
 
               {/* Explainable Reasoning & Rule Details */}
               <div className="space-y-2">
-                <div className="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider">
+                <div className="text-xs font-mono uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider">
                   Audit Decision Explanation
                 </div>
 
                 {preview.violations.length > 0 && (
                   <div className="space-y-1.5">
                     {preview.violations.map((v, i) => (
-                      <div key={i} className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2">
-                        <AlertOctagon className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+                      <div key={i} className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2">
+                        <AlertOctagon className="w-4 h-4 shrink-0 text-rose-500 dark:text-rose-400 mt-0.5" />
                         <div>{v}</div>
                       </div>
                     ))}
@@ -408,8 +408,8 @@ export const SpendPreviewPage: React.FC = () => {
                 {preview.warnings.length > 0 && (
                   <div className="space-y-1.5">
                     {preview.warnings.map((w, i) => (
-                      <div key={i} className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400 mt-0.5" />
+                      <div key={i} className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500 dark:text-amber-400 mt-0.5" />
                         <div>{w}</div>
                       </div>
                     ))}
@@ -417,10 +417,10 @@ export const SpendPreviewPage: React.FC = () => {
                 )}
 
                 {preview.reasons.length > 0 && (
-                  <div className="p-3 rounded-lg bg-navy-950/70 border border-slate-800 text-slate-300 text-xs space-y-1">
+                  <div className="p-3 rounded-lg bg-slate-50 dark:bg-navy-950/70 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs space-y-1">
                     {preview.reasons.map((r, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400"></span>
                         <span>{r}</span>
                       </div>
                     ))}
@@ -429,16 +429,16 @@ export const SpendPreviewPage: React.FC = () => {
               </div>
 
               {/* Engine Timestamp Footer */}
-              <div className="text-[10px] font-mono text-slate-400 pt-2 border-t border-slate-800 flex items-center justify-between">
+              <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <span>Calculated At: {new Date(preview.calculatedAt).toLocaleTimeString()}</span>
                 <span>SpendDecisionEngine v{preview.engineVersion}</span>
               </div>
             </div>
           ) : (
-            <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center text-slate-400 space-y-3">
-              <Sparkles className="w-10 h-10 text-indigo-400/50 mx-auto" />
-              <div className="text-sm font-semibold text-slate-300">Awaiting Spend Parameters</div>
-              <p className="text-xs max-w-sm mx-auto">
+            <div className="glass-panel p-12 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500 dark:text-slate-400 space-y-3">
+              <Sparkles className="w-10 h-10 text-indigo-500/50 mx-auto" />
+              <div className="text-sm font-semibold text-slate-800 dark:text-slate-300">Awaiting Spend Parameters</div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
                 Select a category and amount to run real-time backend decision logic and visualize financial impact.
               </p>
             </div>
