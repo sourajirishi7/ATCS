@@ -1,0 +1,13 @@
+{
+  "name": "atcs-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ATCS — Audit Trailing & Control System",
+  "scripts": {
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:forecast": "python forecast-service/run.py",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build"
+  }
+}

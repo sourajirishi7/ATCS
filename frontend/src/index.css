@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-navy-950 text-slate-100 font-sans;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.04) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(239, 68, 68, 0.03) 0px, transparent 50%);
+  }
+}
+
+/* Glassmorphic Cards */
+.glass-panel {
+  background: rgba(16, 24, 44, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-panel-subtle {
+  background: rgba(22, 34, 59, 0.4);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B1120;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E2F52;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2A3F6D;
+}
+
+/* Status Badges */
+.badge-approve {
+  @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/30;
+}
+
+.badge-review {
+  @apply bg-amber-500/10 text-amber-400 border border-amber-500/30;
+}
+
+.badge-violation {
+  @apply bg-rose-500/10 text-rose-400 border border-rose-500/30;
+}
+
+.badge-neutral {
+  @apply bg-slate-500/10 text-slate-300 border border-slate-500/30;
+}

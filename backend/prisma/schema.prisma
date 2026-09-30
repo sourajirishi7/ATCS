@@ -1,0 +1,447 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum RoleType {
+  EMPLOYEE
+  MANAGER
+  FINANCE
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BudgetStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  EXPIRED
+  CANCELLED
+}
+
+enum SpendingStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  COMMITTED
+  CANCELLED
+}
+
+enum CommitmentStatus {
+  ACTIVE
+  PARTIALLY_SETTLED
+  SETTLED
+  CANCELLED
+}
+
+enum TransactionStatus {
+  RECORDED
+  RECONCILED
+  REVERSED
+}
+
+enum TransactionSource {
+  MANUAL
+  CSV_IMPORT
+  API
+}
+
+enum ApprovalDecision {
+  APPROVED
+  REJECTED
+}
+
+enum DecisionVerdict {
+  APPROVE
+  APPROVAL_REQUIRED
+  WARNING
+  VIOLATION
+  INSUFFICIENT_DATA
+  CONFIGURATION_ERROR
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+}
+
+enum ForecastStatus {
+  WITHIN_FORECAST
+  NEAR_FORECAST_LIMIT
+  PROJECTED_VIOLATION
+  INSUFFICIENT_DATA
+}
+
+enum ExceptionDecision {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// -------------------------------------------------------------
+// 1. IDENTITY DOMAIN
+// -------------------------------------------------------------
+
+model Role {
+  id          String    @id @default(uuid())
+  name        RoleType  @unique
+  description String?
+  users       User[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model User {
+  id              String            @id @default(uuid())
+  name            String
+  email           String            @unique
+  passwordHash    String
+  roleId          String
+  role            Role              @relation(fields: [roleId], references: [id])
+  departmentId    String?
+  department      Department?       @relation(fields: [departmentId], references: [id])
+  status          UserStatus        @default(ACTIVE)
+  spendingRequests SpendingRequest[] @relation("EmployeeRequests")
+  approvals       Approval[]        @relation("ApproverApprovals")
+  transactions    Transaction[]     @relation("EmployeeTransactions")
+  exceptionsMade  Exception[]       @relation("RequestedExceptions")
+  exceptionsReviewed Exception[]    @relation("ReviewedExceptions")
+  auditLogs       AuditLog[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([departmentId])
+  @@index([roleId])
+}
+
+// -------------------------------------------------------------
+// 2. ORGANIZATION DOMAIN
+// -------------------------------------------------------------
+
+model Department {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  code             String            @unique
+  costCenter       String
+  status           String            @default("ACTIVE")
+  users            User[]
+  budgets          Budget[]
+  spendingRequests SpendingRequest[]
+  transactions     Transaction[]
+  alerts           Alert[]
+  forecasts        Forecast[]
+  approvalRules    ApprovalRule[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model CostCenter {
+  id           String     @id @default(uuid())
+  code         String     @unique
+  name         String
+  departmentId String?
+  status       String     @default("ACTIVE")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Category {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  code             String            @unique
+  description      String?
+  status           String            @default("ACTIVE")
+  allocations      BudgetAllocation[]
+  spendingRequests SpendingRequest[]
+  transactions     Transaction[]
+  approvalRules    ApprovalRule[]
+  alerts           Alert[]
+  forecasts        Forecast[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+// -------------------------------------------------------------
+// 3. FINANCE DOMAIN
+// -------------------------------------------------------------
+
+model Budget {
+  id           String             @id @default(uuid())
+  departmentId String
+  department   Department         @relation(fields: [departmentId], references: [id])
+  fiscalPeriod String             // e.g. "FY2026-Q3", "FY2026-Q4"
+  budgetAmount Decimal            @db.Decimal(14, 2)
+  currency     String             @default("INR")
+  status       BudgetStatus       @default(ACTIVE)
+  createdBy    String?
+  allocations  BudgetAllocation[]
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@unique([departmentId, fiscalPeriod])
+  @@index([departmentId, status])
+}
+
+model BudgetAllocation {
+  id              String   @id @default(uuid())
+  budgetId        String
+  budget          Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  categoryId      String
+  category        Category @relation(fields: [categoryId], references: [id])
+  allocatedAmount Decimal  @db.Decimal(14, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([budgetId, categoryId])
+  @@index([budgetId])
+  @@index([categoryId])
+}
+
+// -------------------------------------------------------------
+// 4. SPENDING & COMMITMENT DOMAIN
+// -------------------------------------------------------------
+
+model SpendingRequest {
+  id               String            @id @default(uuid())
+  employeeId       String
+  employee         User              @relation("EmployeeRequests", fields: [employeeId], references: [id])
+  departmentId     String
+  department       Department        @relation(fields: [departmentId], references: [id])
+  categoryId       String
+  category         Category          @relation(fields: [categoryId], references: [id])
+  requestedAmount  Decimal           @db.Decimal(14, 2)
+  currency         String            @default("INR")
+  description      String
+  vendor           String
+  requestedDate    DateTime          @default(now())
+  status           SpendingStatus    @default(SUBMITTED)
+  commitment       Commitment?
+  approvals        Approval[]
+  exceptions       Exception[]
+  decisionSnapshot DecisionSnapshot?
+  alerts           Alert[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([employeeId])
+  @@index([departmentId])
+  @@index([categoryId])
+  @@index([status])
+}
+
+model Commitment {
+  id                String            @id @default(uuid())
+  spendingRequestId String            @unique
+  spendingRequest   SpendingRequest   @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
+  committedAmount   Decimal           @db.Decimal(14, 2)
+  remainingAmount   Decimal           @db.Decimal(14, 2)
+  status            CommitmentStatus  @default(ACTIVE)
+  transactions      Transaction[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([status])
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  employeeId      String
+  employee        User              @relation("EmployeeTransactions", fields: [employeeId], references: [id])
+  departmentId    String
+  department      Department        @relation(fields: [departmentId], references: [id])
+  categoryId      String
+  category        Category          @relation(fields: [categoryId], references: [id])
+  amount          Decimal           @db.Decimal(14, 2)
+  currency        String            @default("INR")
+  transactionDate DateTime          @default(now())
+  vendor          String
+  referenceNumber String            @unique
+  source          TransactionSource @default(MANUAL)
+  status          TransactionStatus @default(RECORDED)
+  commitmentId    String?
+  commitment      Commitment?       @relation(fields: [commitmentId], references: [id])
+  alerts          Alert[]
+  createdAt       DateTime          @default(now())
+
+  @@index([departmentId])
+  @@index([categoryId])
+  @@index([transactionDate])
+  @@index([status])
+}
+
+// -------------------------------------------------------------
+// 5. GOVERNANCE DOMAIN
+// -------------------------------------------------------------
+
+model Approval {
+  id                String           @id @default(uuid())
+  spendingRequestId String
+  spendingRequest   SpendingRequest  @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
+  approverId        String
+  approver          User             @relation("ApproverApprovals", fields: [approverId], references: [id])
+  decision          ApprovalDecision
+  comments          String?
+  decidedAt         DateTime         @default(now())
+
+  @@index([spendingRequestId])
+  @@index([approverId])
+}
+
+model BudgetRule {
+  id        String   @id @default(uuid())
+  ruleName  String   @unique
+  ruleType  String   // e.g. "UTILIZATION_WARNING", "HARD_CEILING"
+  threshold Decimal  @db.Decimal(6, 2) // e.g. 80.00 (80%), 100.00 (100%)
+  action    String   // "WARNING", "BLOCK", "APPROVAL_REQUIRED"
+  enabled   Boolean  @default(true)
+  priority  Int      @default(100)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ApprovalRule {
+  id            String      @id @default(uuid())
+  name          String
+  minimumAmount Decimal     @db.Decimal(14, 2)
+  maximumAmount Decimal?    @db.Decimal(14, 2)
+  requiredRole  RoleType    @default(MANAGER)
+  departmentId  String?
+  department    Department? @relation(fields: [departmentId], references: [id])
+  categoryId    String?
+  category      Category?   @relation(fields: [categoryId], references: [id])
+  enabled       Boolean     @default(true)
+  priority      Int         @default(100)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([departmentId])
+  @@index([categoryId])
+  @@index([enabled])
+}
+
+model Exception {
+  id                String            @id @default(uuid())
+  spendingRequestId String
+  spendingRequest   SpendingRequest   @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
+  type              String            // e.g. "OVER_BUDGET_OVERRIDE", "CATEGORY_RESTRICTION_OVERRIDE"
+  reason            String
+  requestedBy       String
+  requester         User              @relation("RequestedExceptions", fields: [requestedBy], references: [id])
+  reviewedBy        String?
+  reviewer          User?             @relation("ReviewedExceptions", fields: [reviewedBy], references: [id])
+  decision          ExceptionDecision @default(PENDING)
+  createdAt         DateTime          @default(now())
+  reviewedAt        DateTime?
+
+  @@index([spendingRequestId])
+  @@index([decision])
+}
+
+// -------------------------------------------------------------
+// 6. INTELLIGENCE DOMAIN
+// -------------------------------------------------------------
+
+model Forecast {
+  id              String         @id @default(uuid())
+  departmentId    String
+  department      Department     @relation(fields: [departmentId], references: [id])
+  categoryId      String?
+  category        Category?      @relation(fields: [categoryId], references: [id])
+  period          String
+  historicalSpend Decimal        @db.Decimal(14, 2)
+  currentBurnRate Decimal        @db.Decimal(14, 2)
+  projectedAmount Decimal        @db.Decimal(14, 2)
+  budgetAmount    Decimal        @db.Decimal(14, 2)
+  variance        Decimal        @db.Decimal(14, 2)
+  methodology     String         // e.g. "Weighted Moving Average", "Exponential Smoothing"
+  confidence      Decimal        @db.Decimal(5, 2) // e.g. 92.50%
+  status          ForecastStatus @default(WITHIN_FORECAST)
+  createdAt       DateTime       @default(now())
+
+  @@index([departmentId])
+  @@index([status])
+}
+
+model Alert {
+  id                   String        @id @default(uuid())
+  type                 String        // BUDGET_NEAR_LIMIT, BUDGET_EXCEEDED, etc.
+  severity             AlertSeverity @default(INFO)
+  departmentId         String
+  department           Department    @relation(fields: [departmentId], references: [id])
+  categoryId           String?
+  category             Category?     @relation(fields: [categoryId], references: [id])
+  relatedTransactionId String?
+  transaction          Transaction?  @relation(fields: [relatedTransactionId], references: [id])
+  relatedRequestId     String?
+  spendingRequest      SpendingRequest? @relation(fields: [relatedRequestId], references: [id])
+  message              String
+  status               AlertStatus   @default(ACTIVE)
+  createdAt            DateTime      @default(now())
+  resolvedAt           DateTime?
+
+  @@index([departmentId])
+  @@index([severity])
+  @@index([status])
+}
+
+// -------------------------------------------------------------
+// 7. AUDIT & SNAPSHOT DOMAIN
+// -------------------------------------------------------------
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  action        String   // USER_LOGIN, BUDGET_CREATED, SPEND_EVALUATED, COMMITMENT_CREATED, etc.
+  entityType    String   // SpendingRequest, Budget, Transaction, Commitment, etc.
+  entityId      String
+  previousValue String?  // JSON serialized string
+  newValue      String?  // JSON serialized string
+  metadata      String?  // JSON serialized string (IP, user agent, rationale)
+  timestamp     DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+}
+
+model DecisionSnapshot {
+  id                String          @id @default(uuid())
+  spendingRequestId String          @unique
+  spendingRequest   SpendingRequest @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
+  budgetAmount      Decimal         @db.Decimal(14, 2)
+  actualSpend       Decimal         @db.Decimal(14, 2)
+  committedSpend    Decimal         @db.Decimal(14, 2)
+  requestedAmount   Decimal         @db.Decimal(14, 2)
+  utilizationBefore Decimal         @db.Decimal(6, 2)
+  utilizationAfter  Decimal         @db.Decimal(6, 2)
+  remainingBefore   Decimal         @db.Decimal(14, 2)
+  remainingAfter    Decimal         @db.Decimal(14, 2)
+  decision          DecisionVerdict
+  budgetStatus      String          // WITHIN_BUDGET, NEAR_LIMIT, OVER_BUDGET
+  violations        String          // JSON serialized array of strings
+  warnings          String          // JSON serialized array of strings
+  reasons           String          // JSON serialized array of strings
+  engineVersion     String          @default("1.0.0")
+  calculatedAt      DateTime        @default(now())
+
+  @@index([decision])
+  @@index([calculatedAt])
+}
