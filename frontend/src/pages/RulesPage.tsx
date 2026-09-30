@@ -125,13 +125,13 @@ export const RulesPage: React.FC = () => {
                 )}
               </div>
 
-              <div className="p-3 rounded-xl bg-navy-950/80 border border-slate-800 flex items-center justify-between text-xs font-mono">
-                <span className="text-slate-400">Threshold Cap</span>
-                <span className="text-white font-bold">{rule.threshold}%</span>
+              <div className="p-3 rounded-xl bg-slate-100/80 dark:bg-navy-950/80 border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs font-mono">
+                <span className="text-slate-600 dark:text-slate-400">Threshold Cap</span>
+                <span className="text-slate-900 dark:text-white font-bold">{rule.threshold}%</span>
               </div>
 
-              <div className="flex items-center justify-between text-[11px] font-mono pt-2 border-t border-slate-800">
-                <span className="text-slate-400">Enforcement:</span>
+              <div className="flex items-center justify-between text-[11px] font-mono pt-2 border-t border-slate-200 dark:border-slate-800">
+                <span className="text-slate-600 dark:text-slate-400">Enforcement:</span>
                 <span
                   className={`px-2 py-0.5 rounded font-bold ${
                     rule.action === 'BLOCK'

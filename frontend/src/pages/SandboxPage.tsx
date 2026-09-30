@@ -108,33 +108,33 @@ export const SandboxPage: React.FC = () => {
             className={`glass-panel p-6 rounded-2xl border transition-all ${sc.color} flex flex-col justify-between space-y-5`}
           >
             <div className="space-y-3">
-              <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-navy-950 border border-slate-700/80 text-slate-300">
+              <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-navy-950 border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300">
                 {sc.badge}
               </span>
-              <h2 className="text-lg font-bold text-white">{sc.title}</h2>
-              <p className="text-xs text-slate-400">{sc.desc}</p>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">{sc.title}</h2>
+              <p className="text-xs text-slate-600 dark:text-slate-400">{sc.desc}</p>
 
               {/* Parameter Table */}
-              <div className="p-3.5 rounded-xl bg-navy-950/80 border border-slate-800 space-y-1.5 text-xs font-mono">
-                <div className="flex justify-between text-slate-400">
+              <div className="p-3.5 rounded-xl bg-slate-100/80 dark:bg-navy-950/80 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs font-mono">
+                <div className="flex justify-between text-slate-600 dark:text-slate-400">
                   <span>Budget:</span>
-                  <span className="text-white font-bold">₹{sc.params.budget.toLocaleString()}</span>
+                  <span className="text-slate-900 dark:text-white font-bold">₹{sc.params.budget.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600 dark:text-slate-400">
                   <span>Actual Spend:</span>
-                  <span className="text-cyan-400 font-bold">₹{sc.params.actual.toLocaleString()}</span>
+                  <span className="text-cyan-600 dark:text-cyan-400 font-bold">₹{sc.params.actual.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600 dark:text-slate-400">
                   <span>Committed Spend:</span>
-                  <span className="text-indigo-400 font-bold">₹{sc.params.committed.toLocaleString()}</span>
+                  <span className="text-indigo-600 dark:text-indigo-400 font-bold">₹{sc.params.committed.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600 dark:text-slate-400">
                   <span>Proposed Request:</span>
-                  <span className="text-white font-bold">₹{sc.params.request.toLocaleString()}</span>
+                  <span className="text-slate-900 dark:text-white font-bold">₹{sc.params.request.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-slate-400 pt-1 border-t border-slate-800">
+                <div className="flex justify-between text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200 dark:border-slate-800">
                   <span>Projected Spend:</span>
-                  <span className={sc.params.projected > sc.params.budget ? 'text-rose-400 font-bold' : 'text-slate-200'}>
+                  <span className={sc.params.projected > sc.params.budget ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-200'}>
                     ₹{sc.params.projected.toLocaleString()}
                   </span>
                 </div>
@@ -155,10 +155,10 @@ export const SandboxPage: React.FC = () => {
 
       {/* Live Engine Output Card */}
       {result && (
-        <div className="glass-panel p-6 rounded-2xl border border-indigo-500/30 space-y-6 bg-navy-900/90 shadow-glow">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+        <div className="glass-panel p-6 rounded-2xl border border-indigo-500/30 space-y-6 bg-white dark:bg-navy-900/90 shadow-glow">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
             <div className="flex items-center space-x-3">
-              <div className="p-3 rounded-2xl bg-navy-950 border border-slate-800">
+              <div className="p-3 rounded-2xl bg-slate-100 dark:bg-navy-950 border border-slate-200 dark:border-slate-800">
                 <ShieldCheck className="w-6 h-6 text-indigo-400" />
               </div>
               <div>

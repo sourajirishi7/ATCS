@@ -8,79 +8,204 @@
   }
 }
 
-/* -------------------------------------------------------------
+/* =============================================================
+   BUTTONS, SOLID BADGES & ACCENT TRIGGERS
+   Must strictly maintain high-contrast white text in BOTH themes
+   ============================================================= */
+button[class*="bg-indigo-600"],
+button[class*="bg-indigo-500"],
+button[class*="bg-emerald-600"],
+button[class*="bg-emerald-500"],
+button[class*="bg-rose-600"],
+button[class*="bg-rose-500"],
+button[class*="bg-amber-600"],
+button[class*="bg-cyan-600"],
+button[class*="bg-purple-600"],
+a[class*="bg-indigo-600"],
+a[class*="bg-indigo-500"],
+a[class*="bg-emerald-600"],
+a[class*="bg-rose-600"],
+.btn-primary,
+button[class*="bg-indigo-600"] *,
+button[class*="bg-indigo-500"] *,
+button[class*="bg-emerald-600"] *,
+button[class*="bg-emerald-500"] *,
+button[class*="bg-rose-600"] *,
+button[class*="bg-rose-500"] *,
+button[class*="bg-amber-600"] *,
+a[class*="bg-indigo-600"] *,
+a[class*="bg-emerald-600"] *,
+a[class*="bg-rose-600"] * {
+  color: #ffffff !important;
+}
+
+button[class*="bg-indigo-600"] svg,
+button[class*="bg-emerald-600"] svg,
+button[class*="bg-rose-600"] svg,
+button[class*="bg-amber-600"] svg,
+a[class*="bg-indigo-600"] svg {
+  stroke: #ffffff !important;
+}
+
+/* =============================================================
    LIGHT THEME (Default)
-   ------------------------------------------------------------- */
+   ============================================================= */
 html.light body,
 html:not(.dark) body {
   background-color: #f8fafc;
   color: #0f172a;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.04) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.03) 0px, transparent 50%),
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.03) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.02) 0px, transparent 50%),
     radial-gradient(at 50% 100%, rgba(239, 68, 68, 0.02) 0px, transparent 50%);
 }
 
-html.light .bg-navy-950,
-html:not(.dark) .bg-navy-950 {
-  background-color: #f8fafc !important;
-}
-
-html.light .bg-navy-900,
-html:not(.dark) .bg-navy-900 {
-  background-color: #ffffff !important;
-}
-
-html.light .bg-navy-850,
-html:not(.dark) .bg-navy-850 {
-  background-color: #ffffff !important;
-}
-
-html.light .bg-navy-800,
-html:not(.dark) .bg-navy-800 {
-  background-color: #f1f5f9 !important;
-}
-
-html.light .bg-navy-700,
-html:not(.dark) .bg-navy-700 {
-  background-color: #e2e8f0 !important;
-}
-
-html.light .text-white,
-html:not(.dark) .text-white {
+/* Typography Headings in Light Theme */
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6,
+html:not(.dark) h1,
+html:not(.dark) h2,
+html:not(.dark) h3,
+html:not(.dark) h4,
+html:not(.dark) h5,
+html:not(.dark) h6 {
   color: #0f172a !important;
 }
 
-html.light .text-slate-100,
-html:not(.dark) .text-slate-100 {
+/* Surface Font Colors in Light Theme (excluding buttons) */
+html.light .text-white:not(button):not(button *):not(a[class*="bg-"]):not(a[class*="bg-"] *),
+html:not(.dark) .text-white:not(button):not(button *):not(a[class*="bg-"]):not(a[class*="bg-"] *) {
   color: #0f172a !important;
 }
 
-html.light .text-slate-200,
-html:not(.dark) .text-slate-200 {
+html.light .text-slate-100:not(button):not(button *),
+html:not(.dark) .text-slate-100:not(button):not(button *) {
+  color: #0f172a !important;
+}
+
+html.light .text-slate-200:not(button):not(button *),
+html:not(.dark) .text-slate-200:not(button):not(button *) {
   color: #1e293b !important;
 }
 
-html.light .text-slate-300,
-html:not(.dark) .text-slate-300 {
+html.light .text-slate-300:not(button):not(button *),
+html:not(.dark) .text-slate-300:not(button):not(button *) {
   color: #334155 !important;
 }
 
-html.light .text-slate-400,
-html:not(.dark) .text-slate-400 {
+html.light .text-slate-400:not(button):not(button *),
+html:not(.dark) .text-slate-400:not(button):not(button *) {
+  color: #475569 !important;
+}
+
+html.light .text-slate-500:not(button):not(button *),
+html:not(.dark) .text-slate-500:not(button):not(button *) {
   color: #64748b !important;
 }
 
-html.light .border-slate-800,
-html:not(.dark) .border-slate-800 {
+/* Accent Font Colors in Light Theme (Deep WCAG AAA High Contrast) */
+html.light .text-indigo-400:not(button):not(button *),
+html:not(.dark) .text-indigo-400:not(button):not(button *) {
+  color: #4f46e5 !important;
+}
+
+html.light .text-indigo-300:not(button):not(button *),
+html:not(.dark) .text-indigo-300:not(button):not(button *) {
+  color: #4338ca !important;
+}
+
+html.light .text-cyan-400:not(button):not(button *),
+html:not(.dark) .text-cyan-400:not(button):not(button *) {
+  color: #0284c7 !important;
+}
+
+html.light .text-cyan-300:not(button):not(button *),
+html:not(.dark) .text-cyan-300:not(button):not(button *) {
+  color: #0369a1 !important;
+}
+
+html.light .text-emerald-400:not(button):not(button *),
+html:not(.dark) .text-emerald-400:not(button):not(button *) {
+  color: #059669 !important;
+}
+
+html.light .text-emerald-300:not(button):not(button *),
+html:not(.dark) .text-emerald-300:not(button):not(button *) {
+  color: #047857 !important;
+}
+
+html.light .text-amber-400:not(button):not(button *),
+html:not(.dark) .text-amber-400:not(button):not(button *) {
+  color: #d97706 !important;
+}
+
+html.light .text-amber-300:not(button):not(button *),
+html:not(.dark) .text-amber-300:not(button):not(button *) {
+  color: #b45309 !important;
+}
+
+html.light .text-rose-400:not(button):not(button *),
+html:not(.dark) .text-rose-400:not(button):not(button *) {
+  color: #e11d48 !important;
+}
+
+html.light .text-rose-300:not(button):not(button *),
+html:not(.dark) .text-rose-300:not(button):not(button *) {
+  color: #be123c !important;
+}
+
+html.light .text-purple-400:not(button):not(button *),
+html:not(.dark) .text-purple-400:not(button):not(button *) {
+  color: #7c3aed !important;
+}
+
+html.light .text-purple-300:not(button):not(button *),
+html:not(.dark) .text-purple-300:not(button):not(button *) {
+  color: #6d28d9 !important;
+}
+
+/* Backgrounds & Panels in Light Theme (supporting opacity variants) */
+html.light [class*="bg-navy-950"],
+html:not(.dark) [class*="bg-navy-950"] {
+  background-color: #f8fafc !important;
+}
+
+html.light [class*="bg-navy-900"],
+html:not(.dark) [class*="bg-navy-900"] {
+  background-color: #ffffff !important;
+}
+
+html.light [class*="bg-navy-850"],
+html:not(.dark) [class*="bg-navy-850"] {
+  background-color: #ffffff !important;
+}
+
+html.light [class*="bg-navy-800"],
+html:not(.dark) [class*="bg-navy-800"] {
+  background-color: #f1f5f9 !important;
+}
+
+html.light [class*="bg-navy-700"],
+html:not(.dark) [class*="bg-navy-700"] {
+  background-color: #e2e8f0 !important;
+}
+
+/* Borders in Light Theme */
+html.light [class*="border-slate-800"],
+html:not(.dark) [class*="border-slate-800"] {
   border-color: #e2e8f0 !important;
 }
 
-html.light .border-slate-700,
-html:not(.dark) .border-slate-700 {
+html.light [class*="border-slate-700"],
+html:not(.dark) [class*="border-slate-700"] {
   border-color: #cbd5e1 !important;
 }
 
+/* Glass Panels in Light Theme */
 html.light .glass-panel,
 html:not(.dark) .glass-panel {
   background: #ffffff !important;
@@ -97,7 +222,35 @@ html:not(.dark) .glass-panel-subtle {
   border: 1px solid #e2e8f0 !important;
 }
 
-/* Light Theme Inputs */
+/* Tables in Light Theme */
+html.light thead,
+html.light thead tr,
+html.light thead th,
+html:not(.dark) thead,
+html:not(.dark) thead tr,
+html:not(.dark) thead th {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border-color: #e2e8f0 !important;
+  font-weight: 600 !important;
+}
+
+html.light tbody tr,
+html:not(.dark) tbody tr {
+  border-color: #e2e8f0 !important;
+}
+
+html.light tbody tr:hover,
+html:not(.dark) tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+html.light tbody td,
+html:not(.dark) tbody td {
+  border-color: #e2e8f0 !important;
+}
+
+/* Inputs in Light Theme */
 html.light input,
 html.light select,
 html.light textarea,
@@ -116,7 +269,7 @@ html:not(.dark) textarea::placeholder {
   color: #94a3b8 !important;
 }
 
-/* Light Theme Badges */
+/* Badges in Light Theme */
 html.light .badge-approve,
 html:not(.dark) .badge-approve {
   background-color: #ecfdf5 !important;
@@ -145,6 +298,36 @@ html:not(.dark) .badge-neutral {
   border-color: #cbd5e1 !important;
 }
 
+/* Recharts Charts in Light Theme */
+html.light .recharts-default-tooltip,
+html:not(.dark) .recharts-default-tooltip {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light .recharts-tooltip-item,
+html:not(.dark) .recharts-tooltip-item {
+  color: #0f172a !important;
+}
+
+html.light .recharts-tooltip-label,
+html:not(.dark) .recharts-tooltip-label {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+html.light .recharts-cartesian-axis-tick-value,
+html:not(.dark) .recharts-cartesian-axis-tick-value {
+  fill: #475569 !important;
+}
+
+html.light .recharts-legend-item-text,
+html:not(.dark) .recharts-legend-item-text {
+  color: #334155 !important;
+}
+
 /* Light Theme Scrollbars */
 html.light ::-webkit-scrollbar-track,
 html:not(.dark) ::-webkit-scrollbar-track {
@@ -162,9 +345,9 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
-/* -------------------------------------------------------------
+/* =============================================================
    DARK THEME (When .dark class is explicitly added)
-   ------------------------------------------------------------- */
+   ============================================================= */
 html.dark body {
   background-color: #060911;
   color: #f1f5f9;
@@ -174,6 +357,89 @@ html.dark body {
     radial-gradient(at 50% 100%, rgba(239, 68, 68, 0.03) 0px, transparent 50%);
 }
 
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6 {
+  color: #ffffff !important;
+}
+
+html.dark .text-white {
+  color: #ffffff !important;
+}
+
+html.dark .text-slate-100 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-slate-200 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-slate-300 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-slate-500 {
+  color: #64748b !important;
+}
+
+/* Glowing Pastel Accents in Dark Theme */
+html.dark .text-indigo-400 {
+  color: #818cf8 !important;
+}
+
+html.dark .text-indigo-300 {
+  color: #a5b4fc !important;
+}
+
+html.dark .text-cyan-400 {
+  color: #22d3ee !important;
+}
+
+html.dark .text-cyan-300 {
+  color: #67e8f9 !important;
+}
+
+html.dark .text-emerald-400 {
+  color: #34d399 !important;
+}
+
+html.dark .text-emerald-300 {
+  color: #6ee7b7 !important;
+}
+
+html.dark .text-amber-400 {
+  color: #fbbf24 !important;
+}
+
+html.dark .text-amber-300 {
+  color: #fcd34d !important;
+}
+
+html.dark .text-rose-400 {
+  color: #f87171 !important;
+}
+
+html.dark .text-rose-300 {
+  color: #fca5a5 !important;
+}
+
+html.dark .text-purple-400 {
+  color: #c084fc !important;
+}
+
+html.dark .text-purple-300 {
+  color: #d8b4fe !important;
+}
+
+/* Glass Panels in Dark Theme */
 html.dark .glass-panel {
   background: rgba(16, 24, 44, 0.7);
   backdrop-filter: blur(12px);
@@ -187,6 +453,89 @@ html.dark .glass-panel-subtle {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Tables in Dark Theme */
+html.dark thead,
+html.dark thead tr,
+html.dark thead th {
+  background-color: rgba(6, 9, 17, 0.7) !important;
+  color: #94a3b8 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark tbody tr {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark tbody tr:hover {
+  background-color: rgba(22, 34, 59, 0.4) !important;
+}
+
+html.dark tbody td {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Inputs in Dark Theme */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #0B1120 !important;
+  color: #f8fafc !important;
+  border-color: #1E2F52 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Dark Theme Badges */
+html.dark .badge-approve {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+html.dark .badge-review {
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+
+html.dark .badge-violation {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+html.dark .badge-neutral {
+  background-color: rgba(100, 116, 139, 0.1) !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(100, 116, 139, 0.3) !important;
+}
+
+/* Dark Theme Recharts */
+html.dark .recharts-default-tooltip {
+  background-color: #0B1120 !important;
+  border-color: #334155 !important;
+  color: #ffffff !important;
+}
+
+html.dark .recharts-tooltip-item {
+  color: #e2e8f0 !important;
+}
+
+html.dark .recharts-tooltip-label {
+  color: #ffffff !important;
+}
+
+html.dark .recharts-cartesian-axis-tick-value {
+  fill: #94a3b8 !important;
+}
+
+html.dark .recharts-legend-item-text {
+  color: #94a3b8 !important;
+}
+
 html.dark ::-webkit-scrollbar-track {
   background: #0B1120;
 }
@@ -198,20 +547,4 @@ html.dark ::-webkit-scrollbar-thumb {
 
 html.dark ::-webkit-scrollbar-thumb:hover {
   background: #2A3F6D;
-}
-
-html.dark .badge-approve {
-  @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/30;
-}
-
-html.dark .badge-review {
-  @apply bg-amber-500/10 text-amber-400 border border-amber-500/30;
-}
-
-html.dark .badge-violation {
-  @apply bg-rose-500/10 text-rose-400 border border-rose-500/30;
-}
-
-html.dark .badge-neutral {
-  @apply bg-slate-500/10 text-slate-300 border border-slate-500/30;
 }
