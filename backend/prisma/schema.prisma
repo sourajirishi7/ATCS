@@ -1,10 +1,98 @@
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
+}
+
+enum RoleType {
+  EMPLOYEE
+  MANAGER
+  FINANCE
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BudgetStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  EXPIRED
+  CANCELLED
+}
+
+enum SpendingStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  COMMITTED
+  CANCELLED
+}
+
+enum CommitmentStatus {
+  ACTIVE
+  PARTIALLY_SETTLED
+  SETTLED
+  CANCELLED
+}
+
+enum TransactionStatus {
+  RECORDED
+  RECONCILED
+  REVERSED
+}
+
+enum TransactionSource {
+  MANUAL
+  CSV_IMPORT
+  API
+}
+
+enum ApprovalDecision {
+  APPROVED
+  REJECTED
+}
+
+enum DecisionVerdict {
+  APPROVE
+  APPROVAL_REQUIRED
+  WARNING
+  VIOLATION
+  INSUFFICIENT_DATA
+  CONFIGURATION_ERROR
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+}
+
+enum ForecastStatus {
+  WITHIN_FORECAST
+  NEAR_FORECAST_LIMIT
+  PROJECTED_VIOLATION
+  INSUFFICIENT_DATA
+}
+
+enum ExceptionDecision {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 // -------------------------------------------------------------
@@ -12,30 +100,31 @@ generator client {
 // -------------------------------------------------------------
 
 model Role {
-  id          String   @id @default(uuid())
-  name        String   @unique // EMPLOYEE, MANAGER, FINANCE, ADMIN
+  id          String    @id @default(uuid())
+  name        RoleType  @unique
   description String?
   users       User[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model User {
-  id                 String            @id @default(uuid())
-  name               String
-  email              String            @unique
-  passwordHash       String
-  roleId             String
-  role               Role              @relation(fields: [roleId], references: [id])
-  departmentId       String?
-  department         Department?       @relation(fields: [departmentId], references: [id])
-  status             String            @default("ACTIVE") // ACTIVE, INACTIVE
-  spendingRequests   SpendingRequest[] @relation("EmployeeRequests")
-  approvals          Approval[]        @relation("ApproverApprovals")
-  transactions       Transaction[]     @relation("EmployeeTransactions")
-  exceptionsMade     Exception[]       @relation("RequestedExceptions")
-  exceptionsReviewed Exception[]       @relation("ReviewedExceptions")
+  id              String            @id @default(uuid())
+  name            String
+  email           String            @unique
+  passwordHash    String
+  roleId          String
+  role            Role              @relation(fields: [roleId], references: [id])
+  departmentId    String?
+  department      Department?       @relation(fields: [departmentId], references: [id])
+  status          UserStatus        @default(ACTIVE)
+  spendingRequests SpendingRequest[] @relation("EmployeeRequests")
+  approvals       Approval[]        @relation("ApproverApprovals")
+  transactions    Transaction[]     @relation("EmployeeTransactions")
+  exceptionsMade  Exception[]       @relation("RequestedExceptions")
+  exceptionsReviewed Exception[]    @relation("ReviewedExceptions")
   auditLogs          AuditLog[]
+  uploadedDocuments  SpendingDocument[]
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 
@@ -66,13 +155,13 @@ model Department {
 }
 
 model CostCenter {
-  id           String   @id @default(uuid())
-  code         String   @unique
+  id           String     @id @default(uuid())
+  code         String     @unique
   name         String
   departmentId String?
-  status       String   @default("ACTIVE")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  status       String     @default("ACTIVE")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model Category {
@@ -100,9 +189,9 @@ model Budget {
   departmentId String
   department   Department         @relation(fields: [departmentId], references: [id])
   fiscalPeriod String             // e.g. "FY2026-Q3", "FY2026-Q4"
-  budgetAmount Decimal
+  budgetAmount Decimal            @db.Decimal(14, 2)
   currency     String             @default("INR")
-  status       String             @default("ACTIVE") // DRAFT, ACTIVE, CLOSED, EXPIRED, CANCELLED
+  status       BudgetStatus       @default(ACTIVE)
   createdBy    String?
   allocations  BudgetAllocation[]
   createdAt    DateTime           @default(now())
@@ -118,7 +207,7 @@ model BudgetAllocation {
   budget          Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
   categoryId      String
   category        Category @relation(fields: [categoryId], references: [id])
-  allocatedAmount Decimal
+  allocatedAmount Decimal  @db.Decimal(14, 2)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -139,17 +228,18 @@ model SpendingRequest {
   department       Department        @relation(fields: [departmentId], references: [id])
   categoryId       String
   category         Category          @relation(fields: [categoryId], references: [id])
-  requestedAmount  Decimal
+  requestedAmount  Decimal           @db.Decimal(14, 2)
   currency         String            @default("INR")
   description      String
   vendor           String
   requestedDate    DateTime          @default(now())
-  status           String            @default("SUBMITTED") // DRAFT, SUBMITTED, UNDER_REVIEW, APPROVED, REJECTED, COMMITTED, CANCELLED
+  status           SpendingStatus    @default(SUBMITTED)
   commitment       Commitment?
   approvals        Approval[]
   exceptions       Exception[]
   decisionSnapshot DecisionSnapshot?
   alerts           Alert[]
+  documents        SpendingDocument[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
@@ -160,38 +250,38 @@ model SpendingRequest {
 }
 
 model Commitment {
-  id                String          @id @default(uuid())
-  spendingRequestId String          @unique
-  spendingRequest   SpendingRequest @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
-  committedAmount   Decimal
-  remainingAmount   Decimal
-  status            String          @default("ACTIVE") // ACTIVE, PARTIALLY_SETTLED, SETTLED, CANCELLED
+  id                String            @id @default(uuid())
+  spendingRequestId String            @unique
+  spendingRequest   SpendingRequest   @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
+  committedAmount   Decimal           @db.Decimal(14, 2)
+  remainingAmount   Decimal           @db.Decimal(14, 2)
+  status            CommitmentStatus  @default(ACTIVE)
   transactions      Transaction[]
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   @@index([status])
 }
 
 model Transaction {
-  id              String      @id @default(uuid())
+  id              String            @id @default(uuid())
   employeeId      String
-  employee        User        @relation("EmployeeTransactions", fields: [employeeId], references: [id])
+  employee        User              @relation("EmployeeTransactions", fields: [employeeId], references: [id])
   departmentId    String
-  department      Department  @relation(fields: [departmentId], references: [id])
+  department      Department        @relation(fields: [departmentId], references: [id])
   categoryId      String
-  category        Category    @relation(fields: [categoryId], references: [id])
-  amount          Decimal
-  currency        String      @default("INR")
-  transactionDate DateTime    @default(now())
+  category        Category          @relation(fields: [categoryId], references: [id])
+  amount          Decimal           @db.Decimal(14, 2)
+  currency        String            @default("INR")
+  transactionDate DateTime          @default(now())
   vendor          String
-  referenceNumber String      @unique
-  source          String      @default("MANUAL") // MANUAL, CSV_IMPORT, API
-  status          String      @default("RECORDED") // RECORDED, RECONCILED, REVERSED
+  referenceNumber String            @unique
+  source          TransactionSource @default(MANUAL)
+  status          TransactionStatus @default(RECORDED)
   commitmentId    String?
-  commitment      Commitment? @relation(fields: [commitmentId], references: [id])
+  commitment      Commitment?       @relation(fields: [commitmentId], references: [id])
   alerts          Alert[]
-  createdAt       DateTime    @default(now())
+  createdAt       DateTime          @default(now())
 
   @@index([departmentId])
   @@index([categoryId])
@@ -204,14 +294,14 @@ model Transaction {
 // -------------------------------------------------------------
 
 model Approval {
-  id                String          @id @default(uuid())
+  id                String           @id @default(uuid())
   spendingRequestId String
-  spendingRequest   SpendingRequest @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
+  spendingRequest   SpendingRequest  @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
   approverId        String
-  approver          User            @relation("ApproverApprovals", fields: [approverId], references: [id])
-  decision          String          // APPROVED, REJECTED
+  approver          User             @relation("ApproverApprovals", fields: [approverId], references: [id])
+  decision          ApprovalDecision
   comments          String?
-  decidedAt         DateTime        @default(now())
+  decidedAt         DateTime         @default(now())
 
   @@index([spendingRequestId])
   @@index([approverId])
@@ -221,7 +311,7 @@ model BudgetRule {
   id        String   @id @default(uuid())
   ruleName  String   @unique
   ruleType  String   // e.g. "UTILIZATION_WARNING", "HARD_CEILING"
-  threshold Decimal  // e.g. 80.00, 100.00
+  threshold Decimal  @db.Decimal(14, 2) // e.g. 80.00 (80%), 100.00 (100%), or absolute amounts
   action    String   // "WARNING", "BLOCK", "APPROVAL_REQUIRED"
   enabled   Boolean  @default(true)
   priority  Int      @default(100)
@@ -232,9 +322,9 @@ model BudgetRule {
 model ApprovalRule {
   id            String      @id @default(uuid())
   name          String
-  minimumAmount Decimal
-  maximumAmount Decimal?
-  requiredRole  String      @default("MANAGER")
+  minimumAmount Decimal     @db.Decimal(14, 2)
+  maximumAmount Decimal?    @db.Decimal(14, 2)
+  requiredRole  RoleType    @default(MANAGER)
   departmentId  String?
   department    Department? @relation(fields: [departmentId], references: [id])
   categoryId    String?
@@ -250,21 +340,42 @@ model ApprovalRule {
 }
 
 model Exception {
-  id                String          @id @default(uuid())
+  id                String            @id @default(uuid())
   spendingRequestId String
-  spendingRequest   SpendingRequest @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
-  type              String          // e.g. "OVER_BUDGET_OVERRIDE"
+  spendingRequest   SpendingRequest   @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
+  type              String            // e.g. "OVER_BUDGET_OVERRIDE", "CATEGORY_RESTRICTION_OVERRIDE"
   reason            String
   requestedBy       String
-  requester         User            @relation("RequestedExceptions", fields: [requestedBy], references: [id])
+  requester         User              @relation("RequestedExceptions", fields: [requestedBy], references: [id])
   reviewedBy        String?
-  reviewer          User?           @relation("ReviewedExceptions", fields: [reviewedBy], references: [id])
-  decision          String          @default("PENDING") // PENDING, APPROVED, REJECTED
-  createdAt         DateTime        @default(now())
+  reviewer          User?             @relation("ReviewedExceptions", fields: [reviewedBy], references: [id])
+  decision          ExceptionDecision @default(PENDING)
+  createdAt         DateTime          @default(now())
   reviewedAt        DateTime?
 
   @@index([spendingRequestId])
   @@index([decision])
+}
+
+/// Supporting document metadata for a spending request.
+/// The binary file itself lives in Supabase Storage (private bucket);
+/// only the storage path and audit metadata are persisted in PostgreSQL.
+model SpendingDocument {
+  id                String          @id @default(uuid())
+  spendingRequestId String
+  spendingRequest   SpendingRequest @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
+  storagePath       String          @unique
+  fileName          String
+  mimeType          String
+  sizeBytes         Int
+  documentType      String          @default("SUPPORTING")
+  uploadedBy        String
+  uploader          User            @relation(fields: [uploadedBy], references: [id])
+  createdAt         DateTime        @default(now())
+
+  @@index([spendingRequestId])
+  @@index([uploadedBy])
+  @@index([createdAt])
 }
 
 // -------------------------------------------------------------
@@ -272,41 +383,41 @@ model Exception {
 // -------------------------------------------------------------
 
 model Forecast {
-  id              String     @id @default(uuid())
+  id              String         @id @default(uuid())
   departmentId    String
-  department      Department @relation(fields: [departmentId], references: [id])
+  department      Department     @relation(fields: [departmentId], references: [id])
   categoryId      String?
-  category        Category?  @relation(fields: [categoryId], references: [id])
+  category        Category?      @relation(fields: [categoryId], references: [id])
   period          String
-  historicalSpend Decimal
-  currentBurnRate Decimal
-  projectedAmount Decimal
-  budgetAmount    Decimal
-  variance        Decimal
-  methodology     String
-  confidence      Decimal
-  status          String     @default("WITHIN_FORECAST") // WITHIN_FORECAST, NEAR_FORECAST_LIMIT, PROJECTED_VIOLATION, INSUFFICIENT_DATA
-  createdAt       DateTime   @default(now())
+  historicalSpend Decimal        @db.Decimal(14, 2)
+  currentBurnRate Decimal        @db.Decimal(14, 2)
+  projectedAmount Decimal        @db.Decimal(14, 2)
+  budgetAmount    Decimal        @db.Decimal(14, 2)
+  variance        Decimal        @db.Decimal(14, 2)
+  methodology     String         // e.g. "Weighted Moving Average", "Exponential Smoothing"
+  confidence      Decimal        @db.Decimal(5, 2) // e.g. 92.50%
+  status          ForecastStatus @default(WITHIN_FORECAST)
+  createdAt       DateTime       @default(now())
 
   @@index([departmentId])
   @@index([status])
 }
 
 model Alert {
-  id                   String           @id @default(uuid())
-  type                 String
-  severity             String           @default("INFO") // INFO, WARNING, CRITICAL
+  id                   String        @id @default(uuid())
+  type                 String        // BUDGET_NEAR_LIMIT, BUDGET_EXCEEDED, etc.
+  severity             AlertSeverity @default(INFO)
   departmentId         String
-  department           Department       @relation(fields: [departmentId], references: [id])
+  department           Department    @relation(fields: [departmentId], references: [id])
   categoryId           String?
-  category             Category?        @relation(fields: [categoryId], references: [id])
+  category             Category?     @relation(fields: [categoryId], references: [id])
   relatedTransactionId String?
-  transaction          Transaction?     @relation(fields: [relatedTransactionId], references: [id])
+  transaction          Transaction?  @relation(fields: [relatedTransactionId], references: [id])
   relatedRequestId     String?
   spendingRequest      SpendingRequest? @relation(fields: [relatedRequestId], references: [id])
   message              String
-  status               String           @default("ACTIVE") // ACTIVE, RESOLVED
-  createdAt            DateTime         @default(now())
+  status               AlertStatus   @default(ACTIVE)
+  createdAt            DateTime      @default(now())
   resolvedAt           DateTime?
 
   @@index([departmentId])
@@ -322,12 +433,12 @@ model AuditLog {
   id            String   @id @default(uuid())
   userId        String?
   user          User?    @relation(fields: [userId], references: [id])
-  action        String
-  entityType    String
+  action        String   // USER_LOGIN, BUDGET_CREATED, SPEND_EVALUATED, COMMITMENT_CREATED, etc.
+  entityType    String   // SpendingRequest, Budget, Transaction, Commitment, etc.
   entityId      String
-  previousValue String?
-  newValue      String?
-  metadata      String?
+  previousValue String?  // JSON serialized string
+  newValue      String?  // JSON serialized string
+  metadata      String?  // JSON serialized string (IP, user agent, rationale)
   timestamp     DateTime @default(now())
 
   @@index([userId])
@@ -340,19 +451,19 @@ model DecisionSnapshot {
   id                String          @id @default(uuid())
   spendingRequestId String          @unique
   spendingRequest   SpendingRequest @relation(fields: [spendingRequestId], references: [id], onDelete: Cascade)
-  budgetAmount      Decimal
-  actualSpend       Decimal
-  committedSpend    Decimal
-  requestedAmount   Decimal
-  utilizationBefore Decimal
-  utilizationAfter  Decimal
-  remainingBefore   Decimal
-  remainingAfter    Decimal
-  decision          String          // APPROVE, APPROVAL_REQUIRED, WARNING, VIOLATION, INSUFFICIENT_DATA, CONFIGURATION_ERROR
-  budgetStatus      String
-  violations        String
-  warnings          String
-  reasons           String
+  budgetAmount      Decimal         @db.Decimal(14, 2)
+  actualSpend       Decimal         @db.Decimal(14, 2)
+  committedSpend    Decimal         @db.Decimal(14, 2)
+  requestedAmount   Decimal         @db.Decimal(14, 2)
+  utilizationBefore Decimal         @db.Decimal(6, 2)
+  utilizationAfter  Decimal         @db.Decimal(6, 2)
+  remainingBefore   Decimal         @db.Decimal(14, 2)
+  remainingAfter    Decimal         @db.Decimal(14, 2)
+  decision          DecisionVerdict
+  budgetStatus      String          // WITHIN_BUDGET, NEAR_LIMIT, OVER_BUDGET
+  violations        String          // JSON serialized array of strings
+  warnings          String          // JSON serialized array of strings
+  reasons           String          // JSON serialized array of strings
   engineVersion     String          @default("1.0.0")
   calculatedAt      DateTime        @default(now())
 
@@ -369,9 +480,9 @@ model ClientQuotation {
   clientName            String
   projectName           String
   quotationReference    String                      @unique
-  proposedBudget        Decimal
+  proposedBudget        Decimal                     @db.Decimal(14, 2)
   currency              String                      @default("INR")
-  targetProfitMarginPct Decimal                     @default(20.0)
+  targetProfitMarginPct Decimal                     @default(20.0) @db.Decimal(5, 2)
   status                String                      @default("ACTIVE") // DRAFT, ACTIVE, COMPLETED, ARCHIVED
   validUntil            DateTime?
   notes                 String?
@@ -386,8 +497,8 @@ model ClientQuotationAllocation {
   quotation       ClientQuotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   departmentId    String
   department      Department      @relation(fields: [departmentId], references: [id])
-  allocatedAmount Decimal
-  targetMarginPct Decimal         @default(20.0)
+  allocatedAmount Decimal         @db.Decimal(14, 2)
+  targetMarginPct Decimal         @default(20.0) @db.Decimal(5, 2)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 

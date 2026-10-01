@@ -7,8 +7,8 @@ import { validateBody } from '../middleware/validate';
 const router = Router();
 
 const recalcSchema = z.object({
-  departmentId: z.string().uuid(),
-  categoryId: z.string().uuid().optional(),
+  departmentId: z.string().min(1),
+  categoryId: z.string().min(1).optional(),
 });
 
 // Get or trigger forecast evaluation

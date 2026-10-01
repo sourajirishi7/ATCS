@@ -9,13 +9,13 @@ import { BudgetService } from '../services/BudgetService';
 const router = Router();
 
 const createBudgetSchema = z.object({
-  departmentId: z.string().uuid(),
+  departmentId: z.string().min(1),
   fiscalPeriod: z.string().min(4),
   budgetAmount: z.number().positive(),
   currency: z.string().default('INR'),
   allocations: z.array(
     z.object({
-      categoryId: z.string().uuid(),
+      categoryId: z.string().min(1),
       allocatedAmount: z.number().nonnegative(),
     })
   ),

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import healthRoutes from './health.routes';
 import authRoutes from './auth.routes';
 import departmentRoutes from './department.routes';
 import categoryRoutes from './category.routes';
@@ -15,24 +16,40 @@ import rulesRoutes from './rules.routes';
 import exceptionRoutes from './exception.routes';
 import sandboxRoutes from './sandbox.routes';
 import clientBudgetRoutes from './clientBudget.routes';
+import documentRoutes from './documents.routes';
+import aiRoutes from './ai.routes';
+import { requireDatabase } from '../lib/dbHealth';
 
 const router = Router();
 
+/**
+ * Every operational route below is fail-safe gated by `requireDatabase`.
+ *
+ * If Supabase PostgreSQL becomes unreachable, ATCS returns 503 DATABASE_UNAVAILABLE
+ * instead of computing, approving or committing anything from stale or invented
+ * financial state. `/auth` and `/health` are intentionally left ungated so that
+ * operators can still log in and diagnose the outage.
+ */
+router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
-router.use('/departments', departmentRoutes);
-router.use('/categories', categoryRoutes);
-router.use('/budgets', budgetRoutes);
-router.use('/spending-requests', spendingRoutes);
-router.use('/approvals', approvalRoutes);
-router.use('/transactions', transactionRoutes);
-router.use('/commitments', commitmentRoutes);
-router.use('/forecast', forecastRoutes);
-router.use('/alerts', alertRoutes);
-router.use('/dashboard', dashboardRoutes);
-router.use('/audit-logs', auditRoutes);
-router.use('/rules', rulesRoutes);
-router.use('/exceptions', exceptionRoutes);
-router.use('/sandbox', sandboxRoutes);
-router.use('/client-budget', clientBudgetRoutes);
+
+router.use('/departments', requireDatabase, departmentRoutes);
+router.use('/categories', requireDatabase, categoryRoutes);
+router.use('/budgets', requireDatabase, budgetRoutes);
+router.use('/spending-requests', requireDatabase, spendingRoutes);
+router.use('/spending', requireDatabase, spendingRoutes);
+router.use('/approvals', requireDatabase, approvalRoutes);
+router.use('/transactions', requireDatabase, transactionRoutes);
+router.use('/commitments', requireDatabase, commitmentRoutes);
+router.use('/forecast', requireDatabase, forecastRoutes);
+router.use('/alerts', requireDatabase, alertRoutes);
+router.use('/dashboard', requireDatabase, dashboardRoutes);
+router.use('/audit-logs', requireDatabase, auditRoutes);
+router.use('/rules', requireDatabase, rulesRoutes);
+router.use('/exceptions', requireDatabase, exceptionRoutes);
+router.use('/sandbox', requireDatabase, sandboxRoutes);
+router.use('/client-budget', requireDatabase, clientBudgetRoutes);
+router.use('/ai', requireDatabase, aiRoutes);
+router.use('/', requireDatabase, documentRoutes);
 
 export default router;

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { SpendingService } from '../services/SpendingService';
+import { EmployeeSpendingService } from '../services/EmployeeSpendingService';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
 import { SpendingStatus } from '../models/types';
@@ -8,11 +9,13 @@ import { SpendingStatus } from '../models/types';
 const router = Router();
 
 const spendingSchema = z.object({
-  categoryId: z.string().uuid(),
+  categoryId: z.string().min(1),
   requestedAmount: z.number().positive(),
   currency: z.string().default('INR'),
   vendor: z.string().min(2),
   description: z.string().min(3),
+  departmentId: z.string().min(1).optional(),
+  overrideToken: z.string().optional().nullable(),
 });
 
 // Live Spend Decision Preview ("Spend Before You Spend")
@@ -44,6 +47,16 @@ router.post(
     }
   }
 );
+
+// Employee Spending Analytics Endpoint
+router.get('/employee-analytics', authenticate, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    const analytics = await EmployeeSpendingService.getAnalytics(req.user!);
+    res.json({ success: true, data: analytics });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // List spending requests
 router.get('/', authenticate, async (req: AuthenticatedRequest, res, next) => {

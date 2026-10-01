@@ -15,6 +15,7 @@
 - [Technology Stack](#-technology-stack)
 - [Project Directory Layout](#-project-directory-layout)
 - [Quick Start Guide](#-quick-start-guide)
+- [Supabase Persistence Layer](#-supabase-persistence-layer)
 - [Pre-Seeded Enterprise Accounts](#-pre-seeded-enterprise-accounts)
 - [Interactive Features & Capabilities](#-interactive-features--capabilities)
 - [API Reference](#-api-reference)
@@ -61,7 +62,7 @@ graph TD
     subgraph "Core Financial Engine"
         Node --> SDE["SpendDecisionEngine<br/>(Backend Authoritative)"]
         Node --> Lock["DB Transaction Lock<br/>(FOR UPDATE)"]
-        Lock --> DB[("Enterprise Database<br/>SQLite (dev) / PostgreSQL (prod)")]
+        Lock --> DB[("Supabase PostgreSQL<br/>NUMERIC money columns")]
         SDE --> Snapshot["Immutable DecisionSnapshot"]
         Snapshot --> DB
     end
@@ -256,20 +257,42 @@ pip install -r requirements.txt
 cd ..
 ```
 
-### 2. Database Initialization & Seeding
+### 2. Supabase Database Initialization, Migration & Seeding
 
-ATCS comes pre-configured with a zero-setup local SQLite database for instant development:
+**Supabase PostgreSQL is the persistent data layer for ATCS.** The authority chain is
+unchanged — the backend still owns every calculation, rule and authorization decision:
+
+```
+React  ->  ATCS Backend (JWT + RBAC)  ->  Prisma  ->  Supabase PostgreSQL
+```
+
+Before the first run you must supply your own Supabase values in
+`backend/.env` and `frontend/.env.local` (see [`supabase/README.md`](./supabase/README.md)
+for the exact dashboard paths). Templates: `backend/.env.example`, `frontend/.env.example`.
 
 ```bash
 cd backend
+npm install
 
-# Push the schema to the database
-npx prisma db push
+# Apply the full ATCS schema (tables, enums, foreign keys, indexes,
+# unique constraints, NUMERIC money columns, RLS hardening) to Supabase
+npm run prisma:generate
+npm run prisma:migrate
 
-# Seed enterprise roles, users, departments, budgets, rules, and baseline transactions
-npx ts-node --transpile-only prisma/seed.ts
+# Optional: idempotent demo seed (upserts, safe to re-run)
+npm run prisma:seed
+
+# Confirm the integration end-to-end (27-point checklist + financial
+# integrity scenarios + concurrent-request locking test)
+npm run verify:supabase
 cd ..
 ```
+
+Create the private Storage bucket once by running `supabase/storage_setup.sql`
+in the Supabase SQL Editor (the backend will also create it on first upload).
+
+> The previous local SQLite schema is preserved at `backend/prisma/schema.sqlite.prisma`
+> for offline development only. It is **not** the active schema.
 
 ### 3. Launching the Services
 
@@ -295,6 +318,26 @@ npm run dev
 ```
 
 Open your browser at **[http://localhost:5173](http://localhost:5173)**.
+
+---
+
+## 🔐 Supabase Persistence Layer
+
+| Concern | Decision |
+| --- | --- |
+| Database | Supabase PostgreSQL via Prisma. One database, no second architecture. |
+| Money types | `NUMERIC(14,2)` for all amounts, `(6,2)` / `(5,2)` for utilization & confidence. No floats. |
+| `DATABASE_URL` | Supabase transaction pooler (`:6543`, `pgbouncer=true`) for runtime. |
+| `DIRECT_URL` | Supabase direct connection (`:5432`) for `prisma migrate`. |
+| Row Level Security | Enabled on every `public` table with **no permissive policy** for `anon` / `authenticated`. The public anon key can read nothing. |
+| Storage | Private `spending-documents` bucket; downloads only via short-lived backend-minted signed URLs. |
+| Auth | **Unchanged.** ATCS JWT + RBAC. Supabase Auth was not introduced. |
+| Realtime | **Unchanged.** Socket.IO remains the single realtime channel. |
+| Failure behaviour | If Supabase is unreachable, financial routes return `503 DATABASE_UNAVAILABLE`. Nothing is approved, committed or estimated from stale state. |
+| Secrets | `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `DIRECT_URL` and the DB password exist only in `backend/.env` (git-ignored). Never in any `VITE_*` variable or browser bundle. |
+
+Full runbook: [`supabase/README.md`](./supabase/README.md).
+Security scripts: `supabase/rls_hardening.sql`, `supabase/storage_setup.sql`.
 
 ---
 
@@ -450,6 +493,51 @@ npx ts-node --transpile-only tests/SpendDecisionEngine.test.ts
 ====================================================
 🎉 ALL FINANCIAL TESTS PASSED WITH 100% SUCCESS!
 ====================================================
+```
+
+---
+
+## 🤖 Google Gemini AI Agent & Intelligence Layer
+
+ATCS integrates **Google Gemini** as a conversational financial intelligence and explanation agent on top of the backend.
+
+```text
+User  -->  React UI  -->  ATCS Backend (:5000)  -->  PostgreSQL / SpendDecisionEngine  -->  Google Gemini  -->  Natural Language Explanation
+```
+
+### Critical Architecture Boundaries
+- **Gemini is NEVER the Source of Truth**: The existing backend services (`SpendDecisionEngine`, `BudgetService`, `TransactionService`, `CommitmentService`, `ApprovalService`, `ClientBudgetService`, `AuditService`) execute all financial calculations with 28-digit Decimal precision.
+- **Read-Only First**: Gemini Agent has strictly read-only tools. It cannot approve, reject, modify, commit, or delete any financial record. If asked to approve or modify, Gemini redirects the user to official ATCS approval workflows.
+- **Spend Simulation via SpendDecisionEngine**: When asked questions like *"What happens if I spend ₹50,000 more in Hardware?"*, Gemini calls `SpendDecisionEngine.evaluate()` and explains the authoritative numbers (`budget`, `actualSpend`, `committedSpend`, `projectedSpend`, `utilizationBefore`, `utilizationAfter`, `violations`, `warnings`).
+- **Strict RBAC**: Employees only access their own requests and assigned department data; Managers access department-level data; Finance and Admins access enterprise data.
+- **Security Guarantee**: `GEMINI_API_KEY` is strictly confined to the backend `.env`. It is NEVER exposed to client bundles or the frontend.
+- **Resilient Fallback**: If `GEMINI_API_KEY` is omitted or the remote provider is unreachable, ATCS's local deterministic intelligence rules format authoritative responses locally, ensuring ATCS financial controls continue working uninterrupted.
+
+### Controlled Read-Only ATCS Tools
+1. `get_dashboard_summary`: Executive financial KPIs, top categories, and departmental utilization.
+2. `get_department_budget`: Approved departmental allocation and period totals.
+3. `get_department_utilization`: Line-item category breakdown and utilization percentages.
+4. `get_spending_request`: Explains `DecisionSnapshot` with violations, warnings, and rules evaluated.
+5. `simulate_spending`: Read-only execution of `SpendDecisionEngine.evaluate`.
+6. `get_commitments`: Outstanding active commitments ring-fencing funds.
+7. `get_transactions`: Settled transactions ledger.
+8. `get_forecast`: Burn rate and EWMA projected spend.
+9. `get_alerts`: Active overspending and policy warnings.
+10. `get_client_quotation`: Project margins, leftover budget, and estimation of completion from `ClientBudgetService`.
+11. `get_audit_history`: Governance audit logs and historical snapshots.
+
+### Configuring Gemini API Key
+Add your Google AI Studio API key in `backend/.env`:
+```env
+GEMINI_API_KEY="AIzaSyYourGeminiApiKeyHere"
+GEMINI_MODEL="gemini-1.5-flash"
+```
+Or use the in-app Gemini configuration panel by clicking the Key icon in the Gemini Agent drawer.
+
+### Running Gemini Integration Tests
+```bash
+cd backend
+npm run test:gemini
 ```
 
 ---

@@ -74,115 +74,79 @@ html.dark {
    BUTTONS: SOLID VS GHOST VS DARK
    Never allow solid buttons to inherit page text color
    ============================================================= */
-button[class*="bg-indigo-600"],
-button[class*="bg-indigo-500"],
-button[class*="bg-blue-600"],
-button[class*="bg-blue-500"],
-button[class*="bg-emerald-600"],
-button[class*="bg-emerald-500"],
-button[class*="bg-rose-600"],
-button[class*="bg-rose-500"],
-button[class*="bg-amber-600"],
-a[class*="bg-indigo-600"],
-a[class*="bg-indigo-500"],
-a[class*="bg-blue-600"],
+/* Solid buttons / CTA links only — ignore dark: variants or soft/ghost navigation links */
+button.bg-indigo-600,
+button.bg-indigo-500,
+button.bg-blue-600,
+button.bg-blue-500,
+button.bg-emerald-600,
+button.bg-emerald-500,
+button.bg-rose-600,
+button.bg-rose-500,
+button.bg-amber-600,
+a.bg-indigo-600:not(aside a),
+a.bg-indigo-500:not(aside a),
+a.bg-blue-600:not(aside a),
 .btn-primary,
-button[class*="bg-indigo-600"] *,
-button[class*="bg-indigo-500"] *,
-button[class*="bg-blue-600"] *,
-button[class*="bg-emerald-600"] *,
-button[class*="bg-rose-600"] *,
-button[class*="bg-amber-600"] *,
-a[class*="bg-indigo-600"] *,
-a[class*="bg-blue-600"] * {
+button.bg-indigo-600 *,
+button.bg-indigo-500 *,
+button.bg-blue-600 *,
+button.bg-emerald-600 *,
+button.bg-rose-600 *,
+button.bg-amber-600 *,
+a.bg-indigo-600:not(aside a) *,
+a.bg-blue-600:not(aside a) * {
   color: #FFFFFF !important;
 }
 
-button[class*="bg-indigo-600"] svg,
-button[class*="bg-blue-600"] svg,
-button[class*="bg-emerald-600"] svg,
-button[class*="bg-rose-600"] svg,
-button[class*="bg-amber-600"] svg,
-a[class*="bg-indigo-600"] svg,
-a[class*="bg-blue-600"] svg {
+button.bg-indigo-600 svg,
+button.bg-blue-600 svg,
+button.bg-emerald-600 svg,
+button.bg-rose-600 svg,
+button.bg-amber-600 svg,
+a.bg-indigo-600:not(aside a) svg,
+a.bg-blue-600:not(aside a) svg {
   stroke: #FFFFFF !important;
 }
 
 /* =============================================================
-   INTENTIONAL DARK SURFACES
-   Cards/banners explicitly marked with .dark-surface retain
-   crisp light text even when the global theme is LIGHT.
+   SIDEBAR NAVIGATION ACTIVE ITEM CONTRAST
+   High-contrast active item in light theme and dark theme
    ============================================================= */
-.dark-surface {
-  color: #CBD5E1 !important;
+html:not(.dark) aside a.active,
+html.light aside a.active,
+html:not(.dark) aside a[class*="text-black"],
+html.light aside a[class*="text-black"] {
+  color: #000000 !important;
 }
 
-.dark-surface h1,
-.dark-surface h2,
-.dark-surface h3,
-.dark-surface h4,
-.dark-surface h5,
-.dark-surface h6,
-.dark-surface .text-white {
-  color: #FFFFFF !important;
+html:not(.dark) aside a.active *,
+html.light aside a.active *,
+html:not(.dark) aside a[class*="text-black"] *,
+html.light aside a[class*="text-black"] * {
+  color: inherit !important;
 }
 
-.dark-surface p {
-  color: #CBD5E1 !important;
+html:not(.dark) aside a.active svg,
+html.light aside a.active svg,
+html:not(.dark) aside a[class*="text-black"] svg,
+html.light aside a[class*="text-black"] svg {
+  stroke: #000000 !important;
 }
 
-.dark-surface .text-slate-100 {
-  color: #F8FAFC !important;
-}
-
-.dark-surface .text-slate-200 {
-  color: #E2E8F0 !important;
-}
-
-.dark-surface .text-slate-300 {
-  color: #CBD5E1 !important;
-}
-
-.dark-surface .text-slate-400 {
-  color: #94A3B8 !important;
-}
-
-.dark-surface .text-emerald-400 {
-  color: #34D399 !important;
-}
-
-.dark-surface .text-indigo-400,
-.dark-surface .text-indigo-300 {
+html.dark aside a.active,
+html.dark aside a[class*="dark:text-indigo-300"] {
   color: #A5B4FC !important;
 }
 
-.dark-surface .text-amber-400 {
-  color: #FBBF24 !important;
+html.dark aside a.active *,
+html.dark aside a[class*="dark:text-indigo-300"] * {
+  color: inherit !important;
 }
 
-.dark-surface .text-rose-400 {
-  color: #F87171 !important;
-}
-
-.dark-surface input {
-  background-color: #060911 !important;
-  color: #FFFFFF !important;
-  border-color: #334155 !important;
-}
-
-.dark-surface input::placeholder {
-  color: #64748B !important;
-}
-
-.dark-surface button[class*="bg-slate-800"] {
-  background-color: #1E293B !important;
-  color: #E2E8F0 !important;
-  border-color: #334155 !important;
-}
-
-.dark-surface button[class*="bg-slate-800"]:hover {
-  background-color: #334155 !important;
-  color: #FFFFFF !important;
+html.dark aside a.active svg,
+html.dark aside a[class*="dark:text-indigo-300"] svg {
+  stroke: #A5B4FC !important;
 }
 
 /* =============================================================
@@ -196,87 +160,87 @@ html:not(.dark) body {
 }
 
 /* Headings in Light Theme */
-html.light h1:not(.dark-surface *),
-html.light h2:not(.dark-surface *),
-html.light h3:not(.dark-surface *),
-html.light h4:not(.dark-surface *),
-html.light h5:not(.dark-surface *),
-html.light h6:not(.dark-surface *),
-html:not(.dark) h1:not(.dark-surface *),
-html:not(.dark) h2:not(.dark-surface *),
-html:not(.dark) h3:not(.dark-surface *),
-html:not(.dark) h4:not(.dark-surface *),
-html:not(.dark) h5:not(.dark-surface *),
-html:not(.dark) h6:not(.dark-surface *) {
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6,
+html:not(.dark) h1,
+html:not(.dark) h2,
+html:not(.dark) h3,
+html:not(.dark) h4,
+html:not(.dark) h5,
+html:not(.dark) h6 {
   color: #0F172A;
 }
 
 /* Paragraphs and general text on light surfaces */
-html.light p:not(.dark-surface *),
-html:not(.dark) p:not(.dark-surface *) {
+html.light p,
+html:not(.dark) p {
   color: #1E293B;
 }
 
 /* Text on light surfaces originally styled as white */
-html.light .text-white:not(.dark-surface *):not(button):not(button *):not(a[class*="bg-"]):not(a[class*="bg-"] *),
-html:not(.dark) .text-white:not(.dark-surface *):not(button):not(button *):not(a[class*="bg-"]):not(a[class*="bg-"] *) {
+html.light .text-white:not(button):not(button *):not(a[class*="bg-"]):not(a[class*="bg-"] *),
+html:not(.dark) .text-white:not(button):not(button *):not(a[class*="bg-"]):not(a[class*="bg-"] *) {
   color: #0F172A;
 }
 
 /* Secondary and muted slate text on light surfaces */
-html.light .text-slate-100:not(.dark-surface *):not(button):not(button *),
-html:not(.dark) .text-slate-100:not(.dark-surface *):not(button):not(button *) {
+html.light .text-slate-100:not(button):not(button *),
+html:not(.dark) .text-slate-100:not(button):not(button *) {
   color: #0F172A;
 }
 
-html.light .text-slate-200:not(.dark-surface *):not(button):not(button *),
-html:not(.dark) .text-slate-200:not(.dark-surface *):not(button):not(button *) {
+html.light .text-slate-200:not(button):not(button *),
+html:not(.dark) .text-slate-200:not(button):not(button *) {
   color: #1E293B;
 }
 
-html.light .text-slate-300:not(.dark-surface *):not(button):not(button *),
-html:not(.dark) .text-slate-300:not(.dark-surface *):not(button):not(button *) {
+html.light .text-slate-300:not(button):not(button *),
+html:not(.dark) .text-slate-300:not(button):not(button *) {
   color: #334155;
 }
 
-html.light .text-slate-400:not(.dark-surface *):not(button):not(button *),
-html:not(.dark) .text-slate-400:not(.dark-surface *):not(button):not(button *) {
+html.light .text-slate-400:not(button):not(button *),
+html:not(.dark) .text-slate-400:not(button):not(button *) {
   color: #64748B;
 }
 
-html.light .text-slate-500:not(.dark-surface *):not(button):not(button *),
-html:not(.dark) .text-slate-500:not(.dark-surface *):not(button):not(button *) {
+html.light .text-slate-500:not(button):not(button *),
+html:not(.dark) .text-slate-500:not(button):not(button *) {
   color: #64748B;
 }
 
 /* Form labels on light surfaces */
-html.light label:not(.dark-surface *),
-html:not(.dark) label:not(.dark-surface *) {
+html.light label,
+html:not(.dark) label {
   color: #334155;
 }
 
 /* Inputs on light surfaces */
-html.light input:not(.dark-surface *),
-html.light select:not(.dark-surface *),
-html.light textarea:not(.dark-surface *),
-html:not(.dark) input:not(.dark-surface *),
-html:not(.dark) select:not(.dark-surface *),
-html:not(.dark) textarea:not(.dark-surface *) {
+html.light input,
+html.light select,
+html.light textarea,
+html:not(.dark) input,
+html:not(.dark) select,
+html:not(.dark) textarea {
   background-color: #FFFFFF !important;
   color: #1E293B !important;
   border-color: #CBD5E1 !important;
 }
 
-html.light input:not(.dark-surface *)::placeholder,
-html.light textarea:not(.dark-surface *)::placeholder,
-html:not(.dark) input:not(.dark-surface *)::placeholder,
-html:not(.dark) textarea:not(.dark-surface *)::placeholder {
+html.light input::placeholder,
+html.light textarea::placeholder,
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
   color: #94A3B8 !important;
 }
 
 /* Glass Panels and Cards in Light Theme */
-html.light .glass-panel:not(.dark-surface),
-html:not(.dark) .glass-panel:not(.dark-surface) {
+html.light .glass-panel,
+html:not(.dark) .glass-panel {
   background: #FFFFFF !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -284,38 +248,38 @@ html:not(.dark) .glass-panel:not(.dark-surface) {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
 }
 
-html.light .glass-panel-subtle:not(.dark-surface),
-html:not(.dark) .glass-panel-subtle:not(.dark-surface) {
+html.light .glass-panel-subtle,
+html:not(.dark) .glass-panel-subtle {
   background: #F8FAFC !important;
   backdrop-filter: blur(8px);
   border: 1px solid #E2E8F0 !important;
 }
 
 /* Tables in Light Theme */
-html.light thead:not(.dark-surface *),
-html.light thead tr:not(.dark-surface *),
-html.light thead th:not(.dark-surface *),
-html:not(.dark) thead:not(.dark-surface *),
-html:not(.dark) thead tr:not(.dark-surface *),
-html:not(.dark) thead th:not(.dark-surface *) {
+html.light thead,
+html.light thead tr,
+html.light thead th,
+html:not(.dark) thead,
+html:not(.dark) thead tr,
+html:not(.dark) thead th {
   background-color: #F8FAFC !important;
   color: #475569 !important;
   border-color: #E2E8F0 !important;
   font-weight: 600 !important;
 }
 
-html.light tbody tr:not(.dark-surface *),
-html:not(.dark) tbody tr:not(.dark-surface *) {
+html.light tbody tr,
+html:not(.dark) tbody tr {
   border-color: #E2E8F0 !important;
 }
 
-html.light tbody tr:not(.dark-surface *):hover,
-html:not(.dark) tbody tr:not(.dark-surface *):hover {
+html.light tbody tr:hover,
+html:not(.dark) tbody tr:hover {
   background-color: #F8FAFC !important;
 }
 
-html.light tbody td:not(.dark-surface *),
-html:not(.dark) tbody td:not(.dark-surface *) {
+html.light tbody td,
+html:not(.dark) tbody td {
   color: #1E293B;
   border-color: #E2E8F0 !important;
 }

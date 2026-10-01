@@ -123,26 +123,63 @@ export class BudgetService {
       ? 0
       : deptTotals.actualSpend.plus(deptTotals.committedSpend).dividedBy(budgetAmt).times(100).toNumber();
 
-    // Category breakdown
-    const categoryBreakdown = [];
-    for (const alloc of budget.allocations) {
-      const catTotals = await this.calculateSpendTotals(budget.departmentId, alloc.categoryId);
+    // Category breakdown (Batched)
+    const [catTxGroups, catCommitments] = await Promise.all([
+      prisma.transaction.groupBy({
+        by: ['categoryId'],
+        where: {
+          departmentId: budget.departmentId,
+          status: { not: 'REVERSED' },
+        },
+        _sum: { amount: true },
+      }),
+      prisma.commitment.findMany({
+        where: {
+          status: { in: ['ACTIVE', 'PARTIALLY_SETTLED'] },
+          spendingRequest: { departmentId: budget.departmentId },
+        },
+        select: {
+          remainingAmount: true,
+          spendingRequest: { select: { categoryId: true } },
+        },
+      }),
+    ]);
+
+    const catActualMap = new Map<string, Decimal>();
+    for (const g of catTxGroups) {
+      if (g.categoryId && g._sum.amount) {
+        catActualMap.set(g.categoryId, new Decimal(g._sum.amount.toString()));
+      }
+    }
+
+    const catCommitMap = new Map<string, Decimal>();
+    for (const c of catCommitments) {
+      if (c.spendingRequest?.categoryId) {
+        const cId = c.spendingRequest.categoryId;
+        const rem = new Decimal(c.remainingAmount.toString());
+        catCommitMap.set(cId, (catCommitMap.get(cId) || new Decimal(0)).plus(rem));
+      }
+    }
+
+    const categoryBreakdown = budget.allocations.map((alloc) => {
+      const catActual = catActualMap.get(alloc.categoryId) || new Decimal(0);
+      const catCommitted = catCommitMap.get(alloc.categoryId) || new Decimal(0);
       const allocAmt = new Decimal(alloc.allocatedAmount.toString());
-      const catAvail = allocAmt.minus(catTotals.actualSpend).minus(catTotals.committedSpend);
+      const catAvail = allocAmt.minus(catActual).minus(catCommitted);
       const catUtilPct = allocAmt.isZero()
         ? 0
-        : catTotals.actualSpend.plus(catTotals.committedSpend).dividedBy(allocAmt).times(100).toNumber();
+        : catActual.plus(catCommitted).dividedBy(allocAmt).times(100).toNumber();
 
-      categoryBreakdown.push({
+      return {
         categoryId: alloc.categoryId,
         categoryName: alloc.category.name,
         allocatedAmount: toDecimalNumber(allocAmt),
-        actualSpend: toDecimalNumber(catTotals.actualSpend),
-        committedSpend: toDecimalNumber(catTotals.committedSpend),
+        actualSpend: toDecimalNumber(catActual),
+        committedSpend: toDecimalNumber(catCommitted),
         availableAmount: toDecimalNumber(catAvail),
         utilizationPercentage: Number(catUtilPct.toFixed(1)),
-      });
-    }
+      };
+    });
 
     return {
       budgetId: budget.id,

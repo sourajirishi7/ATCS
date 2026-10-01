@@ -79,3 +79,15 @@ export enum ExceptionDecision {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
 }
+
+export type ComplianceBadge = 'EXCEPTION_FLAGGED' | 'OVERRIDE_REQUIRED' | 'AUTO_COMPLIANT';
+
+export interface TriggeredExceptionRule {
+  ruleId: string;
+  ruleCode: string;
+  ruleName: string;
+  ruleType: string;
+  description: string;
+  severity: 'VIOLATION' | 'EXCEPTION' | 'WARNING';
+  action: string;
+}

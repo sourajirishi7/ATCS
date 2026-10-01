@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { SpendingRequest } from '../types';
 import {
   CheckCircle2,
@@ -16,6 +17,7 @@ import {
 
 export const ApprovalsPage: React.FC = () => {
   const { user } = useAuth();
+  const { formatCurrency, currency } = useCurrency();
   const [pendingRequests, setPendingRequests] = useState<SpendingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<Record<string, string>>({});
@@ -70,18 +72,18 @@ export const ApprovalsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
-            <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <CheckCircle2 className="w-6 h-6 text-blue-600" />
             <span>Manager & Finance Approvals Queue</span>
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500">
             Authoritative approval decisions create immutable commitments in PostgreSQL. Self-approval is strictly forbidden.
           </p>
         </div>
 
         <button
           onClick={fetchPending}
-          className="self-start sm:self-auto flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-navy-900 border border-slate-700/80 text-xs text-slate-300 hover:text-white"
+          className="self-start sm:self-auto flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-blue-600 border border-slate-200 shadow-sm transition-all text-xs font-semibold"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Refresh Queue</span>
@@ -92,8 +94,8 @@ export const ApprovalsPage: React.FC = () => {
         <div
           className={`p-4 rounded-xl border text-xs font-medium ${
             message.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+              ? 'bg-blue-50 border-blue-200 text-blue-700 font-semibold'
+              : 'bg-red-50 border-red-200 text-red-700 font-semibold'
           }`}
         >
           {message.text}
@@ -109,61 +111,62 @@ export const ApprovalsPage: React.FC = () => {
             return (
               <div
                 key={req.id}
-                className="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4 hover:border-slate-700 transition-all"
+                className="glass-panel p-6 rounded-2xl border border-slate-200 bg-white space-y-4 hover:border-slate-300 transition-all shadow-sm"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
                   <div>
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold">
+                    {/* Neutral outline badge for pending/informational state (Color 1) */}
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-bold">
                       AWAITING REVIEW
                     </span>
-                    <h3 className="text-lg font-bold text-white mt-1.5">{req.vendor}</h3>
-                    <p className="text-xs text-slate-400">{req.description}</p>
+                    <h3 className="text-lg font-bold text-slate-900 mt-1.5">{req.vendor}</h3>
+                    <p className="text-xs text-slate-500">{req.description}</p>
                   </div>
                   <div className="text-left sm:text-right">
-                    <div className="text-2xl font-black text-white font-mono">
-                      ₹{req.requestedAmount.toLocaleString()}
+                    <div className="text-2xl font-black text-slate-900 font-mono">
+                      {formatCurrency(req.requestedAmount)}
                     </div>
-                    <div className="text-[11px] font-mono text-slate-400">Currency: {req.currency}</div>
+                    <div className="text-[11px] font-mono text-slate-500">Currency: {currency}</div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs p-3.5 rounded-xl bg-navy-950/70 border border-slate-800">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="flex items-center space-x-2">
-                    <UserIcon className="w-4 h-4 text-indigo-400 shrink-0" />
+                    <UserIcon className="w-4 h-4 text-slate-700 shrink-0" />
                     <div>
-                      <div className="text-[10px] text-slate-400">Requestor</div>
-                      <div className="font-semibold text-white truncate">{req.employee?.name}</div>
+                      <div className="text-[10px] text-slate-500">Requestor</div>
+                      <div className="font-semibold text-slate-900 truncate">{req.employee?.name}</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Building className="w-4 h-4 text-cyan-400 shrink-0" />
+                    <Building className="w-4 h-4 text-blue-600 shrink-0" />
                     <div>
-                      <div className="text-[10px] text-slate-400">Department</div>
-                      <div className="font-semibold text-white">{req.department?.name}</div>
+                      <div className="text-[10px] text-slate-500">Department</div>
+                      <div className="font-semibold text-slate-900">{req.department?.name}</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Tag className="w-4 h-4 text-amber-400 shrink-0" />
+                    <Tag className="w-4 h-4 text-slate-600 shrink-0" />
                     <div>
-                      <div className="text-[10px] text-slate-400">Category</div>
-                      <div className="font-semibold text-white">{req.category?.name}</div>
+                      <div className="text-[10px] text-slate-500">Category</div>
+                      <div className="font-semibold text-slate-900">{req.category?.name}</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-slate-400 shrink-0" />
+                    <Clock className="w-4 h-4 text-slate-500 shrink-0" />
                     <div>
-                      <div className="text-[10px] text-slate-400">Date</div>
-                      <div className="font-mono text-white text-[11px]">
+                      <div className="text-[10px] text-slate-500">Date</div>
+                      <div className="font-mono text-slate-900 text-[11px]">
                         {new Date(req.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Self Approval Warning */}
+                {/* Self Approval Warning (Color 3: Crimson/Coral Red) */}
                 {selfApprovalBlocked && (
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />
                     <span>
                       Self-Approval Policy: You cannot approve your own request. Another manager or Finance must review.
                     </span>
@@ -178,20 +181,22 @@ export const ApprovalsPage: React.FC = () => {
                     placeholder="Enter approval rationale or rejection comments..."
                     value={comments[req.id] || ''}
                     onChange={(e) => setComments({ ...comments, [req.id]: e.target.value })}
-                    className="flex-1 w-full px-3.5 py-2.5 bg-navy-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                    className="flex-1 w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 shadow-2xs"
                   />
                   <div className="flex items-center space-x-2 w-full sm:w-auto">
+                    {/* Rejection Action (Color 3: Crimson/Coral Red) */}
                     <button
                       onClick={() => handleDecision(req.id, 'reject')}
                       disabled={selfApprovalBlocked || processingId === req.id}
-                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 text-xs font-semibold transition-all disabled:opacity-50"
+                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-xs font-bold transition-all disabled:opacity-50"
                     >
                       Reject
                     </button>
+                    {/* Primary Approval Action (Color 2: Royal Blue) */}
                     <button
                       onClick={() => handleDecision(req.id, 'approve')}
                       disabled={selfApprovalBlocked || processingId === req.id}
-                      className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-glow-emerald text-xs font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="flex-1 sm:flex-initial px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm text-xs font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Approve & Commit</span>
@@ -203,9 +208,9 @@ export const ApprovalsPage: React.FC = () => {
           })}
         </div>
       ) : (
-        <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center text-slate-400 space-y-2">
-          <CheckCircle2 className="w-10 h-10 text-emerald-400/50 mx-auto" />
-          <div className="text-sm font-semibold text-white">Approvals Queue is Clear</div>
+        <div className="glass-panel p-12 rounded-2xl border border-slate-200 text-center text-slate-500 bg-white space-y-2">
+          <CheckCircle2 className="w-10 h-10 text-blue-600 mx-auto" />
+          <div className="text-sm font-semibold text-slate-900">Approvals Queue is Clear</div>
           <p className="text-xs">There are no pending spending requests awaiting your review.</p>
         </div>
       )}

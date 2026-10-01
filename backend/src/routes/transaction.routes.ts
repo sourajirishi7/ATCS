@@ -13,15 +13,15 @@ const router = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 const createTxSchema = z.object({
-  employeeId: z.string().uuid().optional(),
-  departmentId: z.string().uuid(),
-  categoryId: z.string().uuid(),
+  employeeId: z.string().min(1).optional(),
+  departmentId: z.string().min(1),
+  categoryId: z.string().min(1),
   amount: z.number().positive(),
   currency: z.string().default('INR'),
   transactionDate: z.string().optional(),
   vendor: z.string().min(2),
   referenceNumber: z.string().min(3),
-  commitmentId: z.string().uuid().optional().nullable(),
+  commitmentId: z.string().min(1).optional().nullable(),
 });
 
 const reverseTxSchema = z.object({

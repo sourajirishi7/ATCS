@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { Category, DecisionEvaluationOutput } from '../types';
+import { useCurrency } from '../context/CurrencyContext';
+import { Category, Department, DecisionEvaluationOutput } from '../types';
 import {
   Sparkles,
   ShieldCheck,
@@ -23,13 +24,18 @@ import { useNavigate } from 'react-router-dom';
 
 export const SpendPreviewPage: React.FC = () => {
   const { user } = useAuth();
+  const { formatCurrency, currencySymbol, currency } = useCurrency();
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedDepartment, setSelectedDepartment] = useState<string>(user?.departmentId || '');
   const [amount, setAmount] = useState<number | string>('');
   const [vendor, setVendor] = useState('');
   const [description, setDescription] = useState('');
+  const [overrideToken, setOverrideToken] = useState('');
+  const [showOverrideInput, setShowOverrideInput] = useState(false);
   
   const [preview, setPreview] = useState<DecisionEvaluationOutput | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
@@ -37,17 +43,27 @@ export const SpendPreviewPage: React.FC = () => {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
-    async function loadCategories() {
+    async function loadMetadata() {
       try {
-        const data = await api.get<Category[]>('/categories');
-        setCategories(data);
-        if (data.length > 0) setSelectedCategory(data[0].id);
+        const [cats, depts] = await Promise.all([
+          api.get<Category[]>('/categories'),
+          api.get<Department[]>('/departments'),
+        ]);
+        setCategories(cats);
+        if (cats.length > 0) setSelectedCategory(cats[0].id);
+
+        setDepartments(depts);
+        if (user?.departmentId) {
+          setSelectedDepartment(user.departmentId);
+        } else if (depts.length > 0) {
+          setSelectedDepartment(depts[0].id);
+        }
       } catch (err) {
-        console.error('Failed to load categories', err);
+        console.error('Failed to load form metadata', err);
       }
     }
-    loadCategories();
-  }, []);
+    loadMetadata();
+  }, [user]);
 
   // Debounced live evaluation call to SpendDecisionEngine
   useEffect(() => {
@@ -61,10 +77,12 @@ export const SpendPreviewPage: React.FC = () => {
       try {
         const result = await api.post<DecisionEvaluationOutput>('/spending-requests/preview', {
           categoryId: selectedCategory,
+          departmentId: selectedDepartment || user?.departmentId || undefined,
           requestedAmount: Number(amount),
           currency: 'INR',
           vendor: vendor || 'Vendor',
           description: description || 'Spend simulation',
+          overrideToken: overrideToken.trim() || undefined,
         });
         setPreview(result);
       } catch (err: any) {
@@ -75,7 +93,7 @@ export const SpendPreviewPage: React.FC = () => {
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [selectedCategory, amount, vendor, description]);
+  }, [selectedCategory, selectedDepartment, amount, vendor, description, overrideToken, user]);
 
   // Submit actual authoritative request to database
   const handleSubmitAuthoritativeRequest = async () => {
@@ -85,15 +103,17 @@ export const SpendPreviewPage: React.FC = () => {
     try {
       const res = await api.post<any>('/spending-requests', {
         categoryId: selectedCategory,
+        departmentId: selectedDepartment || user?.departmentId || undefined,
         requestedAmount: Number(amount),
         currency: 'INR',
         vendor,
         description,
+        overrideToken: overrideToken.trim() || undefined,
       });
 
       setFeedback({
         type: 'success',
-        message: `Request created with verdict '${res.verdict.decision}'. Status: ${res.spendingRequest.status}`,
+        message: `Request created with verdict '${res.verdict.decision}'. Route: ${res.spendingRequest.routeStatus || res.spendingRequest.status}`,
       });
 
       setTimeout(() => {
@@ -113,40 +133,40 @@ export const SpendPreviewPage: React.FC = () => {
     switch (decision) {
       case 'APPROVE':
         return {
-          bg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
-          badge: 'bg-emerald-500 text-navy-950',
+          bg: 'bg-blue-50 border-blue-200 text-blue-900',
+          badge: 'bg-blue-600 text-white',
           icon: CheckCircle2,
-          glow: 'shadow-glow-emerald',
+          glow: '',
           title: 'PRE-APPROVED BY RULES',
         };
       case 'APPROVAL_REQUIRED':
         return {
-          bg: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
-          badge: 'bg-amber-500 text-navy-950',
+          bg: 'bg-slate-50 border-slate-300 text-slate-900',
+          badge: 'bg-slate-700 text-white',
           icon: Clock,
-          glow: 'shadow-glow-amber',
+          glow: '',
           title: 'APPROVAL REQUIRED',
         };
       case 'VIOLATION':
         return {
-          bg: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
-          badge: 'bg-rose-500 text-white',
+          bg: 'bg-red-50 border-red-200 text-red-900',
+          badge: 'bg-red-600 text-white',
           icon: XCircle,
-          glow: 'shadow-glow-rose',
+          glow: '',
           title: 'BUDGET POLICY VIOLATION',
         };
       case 'WARNING':
         return {
-          bg: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
-          badge: 'bg-amber-500 text-navy-950',
+          bg: 'bg-red-50 border-red-200 text-red-900',
+          badge: 'bg-red-600 text-white',
           icon: AlertTriangle,
-          glow: 'shadow-glow-amber',
+          glow: '',
           title: 'APPROVED WITH HIGH-UTILIZATION WARNING',
         };
       default:
         return {
-          bg: 'bg-slate-800 border-slate-700 text-slate-300',
-          badge: 'bg-slate-700 text-white',
+          bg: 'bg-slate-50 border-slate-200 text-slate-800',
+          badge: 'bg-slate-200 text-slate-800',
           icon: ShieldCheck,
           glow: '',
           title: 'CALCULATING VERDICT...',
@@ -161,14 +181,14 @@ export const SpendPreviewPage: React.FC = () => {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <div className="inline-flex items-center space-x-2 text-blue-600 dark:text-indigo-400 text-xs font-mono font-bold mb-1">
-          <Sparkles className="w-4 h-4 text-blue-600 dark:text-indigo-400" />
+        <div className="inline-flex items-center space-x-2 text-blue-600 text-xs font-mono font-bold mb-1">
+          <Sparkles className="w-4 h-4 text-blue-600" />
           <span>SPEND BEFORE YOU SPEND ENGINE</span>
         </div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-black dark:text-white tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
           Spend Decision Preview Simulator
         </h1>
-        <p className="text-xs md:text-sm text-black dark:text-slate-400 max-w-2xl font-medium">
+        <p className="text-xs md:text-sm text-slate-600 max-w-2xl font-medium">
           Test proposed spending in real-time. The central authoritative engine recalculates budget ceilings, existing actuals, outstanding commitments, and approval thresholds before money is spent.
         </p>
       </div>
@@ -177,8 +197,8 @@ export const SpendPreviewPage: React.FC = () => {
         <div
           className={`p-4 rounded-xl border text-xs font-medium ${
             feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+              ? 'bg-blue-50 border-blue-200 text-blue-700'
+              : 'bg-red-50 border-red-200 text-red-700'
           }`}
         >
           {feedback.message}
@@ -187,24 +207,44 @@ export const SpendPreviewPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Form: Proposed Parameters (5 Cols) */}
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800 lg:col-span-5 space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider font-mono">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 lg:col-span-5 space-y-5 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider font-mono">
               Proposed Spend Parameters
             </h2>
-            <span className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 font-bold">Department: {user?.department?.name || 'Assigned Scope'}</span>
+            <span className="text-[11px] font-mono text-blue-600 font-bold">Department: {user?.department?.name || 'Assigned Scope'}</span>
           </div>
 
           <div className="space-y-4">
+            {/* Department Select if Admin/Finance */}
+            {(!user?.departmentId || user.role === 'ADMIN' || user.role === 'FINANCE') && departments.length > 0 && (
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1.5 flex items-center gap-1.5">
+                  <Building className="w-3.5 h-3.5 text-slate-500" /> Target Department
+                </label>
+                <select
+                  value={selectedDepartment}
+                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} ({d.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
             {/* Category Select */}
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Expense Category
+              <label className="block text-xs font-medium text-slate-700 mb-1.5 flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5 text-slate-500" /> Expense Category
               </label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -216,14 +256,14 @@ export const SpendPreviewPage: React.FC = () => {
 
             {/* Requested Amount */}
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center justify-between">
+              <label className="block text-xs font-medium text-slate-700 mb-1.5 flex items-center justify-between">
                 <span className="flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Proposed Amount (INR)
+                  <DollarSign className="w-3.5 h-3.5 text-slate-500" /> Proposed Amount ({currency})
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Numeric Precision</span>
+                <span className="text-[11px] text-slate-500 font-mono">Numeric Precision</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-2.5 text-slate-400 font-mono text-sm">₹</span>
+                <span className="absolute left-3.5 top-2.5 text-slate-400 font-mono text-sm">{currencySymbol}</span>
                 <input
                   type="number"
                   min="1"
@@ -231,7 +271,7 @@ export const SpendPreviewPage: React.FC = () => {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="20000"
-                  className="w-full pl-8 pr-4 py-2.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-slate-800 rounded-xl text-sm font-mono text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 font-bold"
+                  className="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-mono text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-bold"
                 />
               </div>
               {/* Quick Preset Buttons */}
@@ -241,9 +281,9 @@ export const SpendPreviewPage: React.FC = () => {
                     key={preset}
                     type="button"
                     onClick={() => setAmount(preset)}
-                    className="text-[10px] font-mono px-2 py-1 rounded-md bg-slate-100 dark:bg-navy-900 border border-slate-300 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-400 dark:hover:border-slate-500 transition-colors"
+                    className="text-[10px] font-mono px-2 py-1 rounded-md bg-slate-100 border border-slate-300 text-slate-700 hover:text-slate-900 hover:border-slate-400 transition-colors"
                   >
-                    ₹{preset.toLocaleString()}
+                    {formatCurrency(preset)}
                   </button>
                 ))}
               </div>
@@ -251,30 +291,60 @@ export const SpendPreviewPage: React.FC = () => {
 
             {/* Vendor Name */}
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <Building className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Vendor / Payee
+              <label className="block text-xs font-medium text-slate-700 mb-1.5 flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-slate-500" /> Vendor / Payee
               </label>
               <input
                 type="text"
                 value={vendor}
                 onChange={(e) => setVendor(e.target.value)}
                 placeholder="AWS, GitHub, Delta Air, etc."
-                className="w-full px-3.5 py-2.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" /> Business Justification
+              <label className="block text-xs font-medium text-slate-700 mb-1.5 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-slate-500" /> Business Justification
               </label>
               <textarea
                 rows={2}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Specify the business purpose of this expenditure..."
-                className="w-full px-3.5 py-2.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-slate-800 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
+            </div>
+
+            {/* Override Token Input */}
+            <div className="pt-1 border-t border-slate-200 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowOverrideInput(!showOverrideInput)}
+                className="text-[11px] font-mono text-blue-600 hover:underline flex items-center gap-1 font-semibold"
+              >
+                <Lock className="w-3 h-3" />
+                <span>{showOverrideInput ? 'Hide Managerial Override Token' : 'Have a Managerial Override Token?'}</span>
+              </button>
+
+              {(showOverrideInput || preview?.complianceBadge === 'OVERRIDE_REQUIRED' || preview?.violations?.some(v => v.includes('Hard budget cap'))) && (
+                <div className="mt-2 p-3 rounded-xl bg-slate-50 dark:bg-navy-950/40 border border-slate-200 dark:border-slate-800 space-y-1.5">
+                  <label className="block text-[11px] font-bold text-slate-800 dark:text-slate-200">
+                    Managerial Override Token
+                  </label>
+                  <input
+                    type="text"
+                    value={overrideToken}
+                    onChange={(e) => setOverrideToken(e.target.value)}
+                    placeholder="e.g. OVERRIDE-VP-7782"
+                    className="w-full px-3 py-1.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono text-slate-900 dark:text-slate-100 focus:outline-none focus:border-blue-600"
+                  />
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                    Required to unlock hard-capped ceilings or mandatory override policies.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
@@ -284,15 +354,15 @@ export const SpendPreviewPage: React.FC = () => {
               disabled={submitting || !preview || preview.decision === 'VIOLATION'}
               className={`w-full py-3 rounded-xl font-semibold text-xs transition-all flex items-center justify-center space-x-2 ${
                 preview?.decision === 'VIOLATION'
-                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
-                  : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-glow'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
               }`}
             >
               <span>{submitting ? 'Submitting Request...' : 'Commit Authoritative Spending Request'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
             {preview?.decision === 'VIOLATION' && (
-              <p className="text-[11px] text-rose-400 text-center">
+              <p className="text-[11px] text-red-600 text-center">
                 Submissions that violate budget policy are blocked. File an exception override if urgent.
               </p>
             )}
@@ -323,28 +393,72 @@ export const SpendPreviewPage: React.FC = () => {
                   </div>
                 </div>
 
-                <span className={`text-[10px] font-mono uppercase font-bold px-2.5 py-1 rounded-full ${style.badge}`}>
-                  {preview.decision}
-                </span>
+                <div className="flex flex-col items-end gap-1.5">
+                  <span className={`text-[10px] font-mono uppercase font-bold px-2.5 py-1 rounded-full ${style.badge}`}>
+                    {preview.decision}
+                  </span>
+                  {preview.complianceBadge && (
+                    <span className={`text-[9px] font-mono uppercase font-bold px-2 py-0.5 rounded border ${
+                      preview.complianceBadge === 'EXCEPTION_FLAGGED' || preview.complianceBadge === 'OVERRIDE_REQUIRED'
+                        ? 'bg-red-50 text-red-700 border-red-200'
+                        : 'bg-blue-50 text-blue-700 border-blue-200'
+                    }`}>
+                      {preview.complianceBadge.replace(/_/g, ' ')}
+                    </span>
+                  )}
+                </div>
               </div>
+
+              {/* Active Exception Rules Interception Callout (Color 3: Crimson/Coral Red) */}
+              {(preview.exceptionTriggered || (preview.triggeredRules && preview.triggeredRules.length > 0)) && (
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200 space-y-2.5">
+                  <div className="flex items-center gap-2 text-red-900 font-bold text-xs">
+                    <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+                    <span>Budget Exception Rule Intercepted</span>
+                    <span className="ml-auto font-mono text-[10px] px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-200 font-bold">
+                      Route: {preview.routeStatus || 'PENDING_EXCEPTION_REVIEW'}
+                    </span>
+                  </div>
+
+                  {preview.triggeredRules && preview.triggeredRules.length > 0 ? (
+                    <div className="space-y-2 pt-1">
+                      {preview.triggeredRules.map((rule, idx) => (
+                        <div key={idx} className="p-2.5 rounded-lg bg-white border border-red-200 text-xs space-y-1">
+                          <div className="flex items-center justify-between font-mono font-bold text-slate-900">
+                            <span>{rule.ruleCode || rule.code}: {rule.ruleName || rule.name}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 font-bold">
+                              {rule.action}
+                            </span>
+                          </div>
+                          <p className="text-slate-600 text-[11px]">{rule.description || rule.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  <p className="text-[11px] text-red-800 font-medium">
+                    Automated straight-through approval is blocked by policy. This spend will require multi-tier authorization by department leadership or finance.
+                  </p>
+                </div>
+              )}
 
               {/* Core Financial State Comparison Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-slate-50 dark:bg-navy-950/80 border border-slate-200 dark:border-slate-800 text-xs">
                 <div>
                   <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">Governing Budget</div>
-                  <div className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">₹{preview.budgetAmount.toLocaleString()}</div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{formatCurrency(preview.budgetAmount)}</div>
                 </div>
                 <div>
                   <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">Actual Settled</div>
-                  <div className="text-sm font-bold text-cyan-600 dark:text-cyan-400 mt-0.5">₹{preview.actualSpend.toLocaleString()}</div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{formatCurrency(preview.actualSpend)}</div>
                 </div>
                 <div>
                   <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">Committed</div>
-                  <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">₹{preview.committedSpend.toLocaleString()}</div>
+                  <div className="text-sm font-bold text-blue-600 dark:text-blue-400 mt-0.5">{formatCurrency(preview.committedSpend)}</div>
                 </div>
                 <div>
                   <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase">Available Before</div>
-                  <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">₹{preview.availableBefore.toLocaleString()}</div>
+                  <div className="text-sm font-bold text-blue-600 dark:text-blue-400 mt-0.5">{formatCurrency(preview.availableBefore)}</div>
                 </div>
               </div>
 
@@ -354,8 +468,8 @@ export const SpendPreviewPage: React.FC = () => {
                   <span className="font-semibold text-slate-800 dark:text-slate-200">Budget Utilization Impact</span>
                   <div className="font-mono text-right">
                     <span className="text-slate-500 dark:text-slate-400">{preview.utilizationBefore}%</span>
-                    <span className="text-indigo-600 dark:text-indigo-400 mx-1.5 font-bold">→</span>
-                    <span className={`font-bold ${preview.utilizationAfter > 100 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>
+                    <span className="text-blue-600 dark:text-blue-400 mx-1.5 font-bold">→</span>
+                    <span className={`font-bold ${preview.utilizationAfter > 100 ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-white'}`}>
                       {preview.utilizationAfter}%
                     </span>
                   </div>
@@ -366,7 +480,7 @@ export const SpendPreviewPage: React.FC = () => {
                   {/* Current spend */}
                   <div
                     style={{ width: `${Math.min(preview.utilizationBefore, 100)}%` }}
-                    className="bg-indigo-600 dark:bg-indigo-500 h-full rounded-l-full"
+                    className="bg-blue-600 h-full rounded-l-full"
                     title={`Current: ${preview.utilizationBefore}%`}
                   />
                   {/* Incremental proposed spend */}
@@ -374,16 +488,16 @@ export const SpendPreviewPage: React.FC = () => {
                     style={{
                       width: `${Math.min(Math.max(preview.utilizationAfter - preview.utilizationBefore, 0), 100 - Math.min(preview.utilizationBefore, 100))}%`,
                     }}
-                    className={`h-full ${preview.utilizationAfter > 100 ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                    className={`h-full ${preview.utilizationAfter > 100 ? 'bg-red-500' : 'bg-blue-400'}`}
                     title={`Proposed: +${(preview.utilizationAfter - preview.utilizationBefore).toFixed(1)}%`}
                   />
                 </div>
 
                 {/* Calculation formula display */}
                 <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
-                  <span>Projected Spend: ₹{preview.projectedSpend.toLocaleString()}</span>
-                  <span className={preview.remainingAfter < 0 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-300'}>
-                    Remaining Headroom: ₹{preview.remainingAfter.toLocaleString()}
+                  <span>Projected Spend: {formatCurrency(preview.projectedSpend)}</span>
+                  <span className={preview.remainingAfter < 0 ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-700 dark:text-slate-300'}>
+                    Remaining Headroom: {formatCurrency(preview.remainingAfter)}
                   </span>
                 </div>
               </div>
@@ -397,8 +511,8 @@ export const SpendPreviewPage: React.FC = () => {
                 {preview.violations.length > 0 && (
                   <div className="space-y-1.5">
                     {preview.violations.map((v, i) => (
-                      <div key={i} className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2">
-                        <AlertOctagon className="w-4 h-4 shrink-0 text-rose-500 dark:text-rose-400 mt-0.5" />
+                      <div key={i} className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2">
+                        <AlertOctagon className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
                         <div>{v}</div>
                       </div>
                     ))}
@@ -408,8 +522,8 @@ export const SpendPreviewPage: React.FC = () => {
                 {preview.warnings.length > 0 && (
                   <div className="space-y-1.5">
                     {preview.warnings.map((w, i) => (
-                      <div key={i} className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500 dark:text-amber-400 mt-0.5" />
+                      <div key={i} className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
                         <div>{w}</div>
                       </div>
                     ))}
@@ -420,7 +534,7 @@ export const SpendPreviewPage: React.FC = () => {
                   <div className="p-3 rounded-lg bg-slate-50 dark:bg-navy-950/70 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs space-y-1">
                     {preview.reasons.map((r, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                         <span>{r}</span>
                       </div>
                     ))}
@@ -435,10 +549,10 @@ export const SpendPreviewPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="glass-panel p-12 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-slate-500 dark:text-slate-400 space-y-3">
-              <Sparkles className="w-10 h-10 text-indigo-500/50 mx-auto" />
-              <div className="text-sm font-semibold text-slate-800 dark:text-slate-300">Awaiting Spend Parameters</div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
+            <div className="bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-500 space-y-3 shadow-sm">
+              <Sparkles className="w-10 h-10 text-blue-600/50 mx-auto" />
+              <div className="text-sm font-semibold text-slate-800">Awaiting Spend Parameters</div>
+              <p className="text-xs text-slate-600 max-w-sm mx-auto">
                 Select a category and amount to run real-time backend decision logic and visualize financial impact.
               </p>
             </div>

@@ -50,6 +50,21 @@ export interface Budget {
   allocations: BudgetAllocation[];
 }
 
+export type ComplianceBadge = 'EXCEPTION_FLAGGED' | 'OVERRIDE_REQUIRED' | 'AUTO_COMPLIANT';
+
+export interface TriggeredRuleInfo {
+  ruleId?: string;
+  ruleCode?: string;
+  code?: string;
+  ruleName?: string;
+  name?: string;
+  ruleType?: string;
+  description?: string;
+  message?: string;
+  severity?: 'VIOLATION' | 'EXCEPTION' | 'WARNING' | string;
+  action?: string;
+}
+
 export interface DecisionEvaluationOutput {
   decision: 'APPROVE' | 'APPROVAL_REQUIRED' | 'WARNING' | 'VIOLATION' | 'INSUFFICIENT_DATA' | 'CONFIGURATION_ERROR';
   budgetStatus: 'WITHIN_BUDGET' | 'NEAR_LIMIT' | 'OVER_BUDGET' | 'NO_BUDGET' | 'INVALID_CONFIG';
@@ -69,6 +84,10 @@ export interface DecisionEvaluationOutput {
   reasons: string[];
   calculatedAt: string;
   engineVersion: string;
+  exceptionTriggered?: boolean;
+  complianceBadge?: ComplianceBadge;
+  routeStatus?: string;
+  triggeredRules?: TriggeredRuleInfo[];
 }
 
 export interface SpendingRequest {
@@ -84,6 +103,10 @@ export interface SpendingRequest {
   description: string;
   vendor: string;
   status: 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'COMMITTED' | 'CANCELLED';
+  complianceBadge?: ComplianceBadge;
+  routeStatus?: string;
+  triggeredRules?: TriggeredRuleInfo[];
+  exceptionTriggered?: boolean;
   commitment?: Commitment | null;
   decisionSnapshot?: DecisionSnapshot | null;
   approvals?: any[];
@@ -136,10 +159,48 @@ export interface DecisionSnapshot {
   budgetStatus: string;
   violations: string[];
   warnings: string[];
-  reasons: string[];
+  reasons: string[] | string | any;
   engineVersion: string;
   calculatedAt: string;
+  complianceBadge?: ComplianceBadge;
+  routeStatus?: string;
+  triggeredRules?: TriggeredRuleInfo[];
+  exceptionTriggered?: boolean;
   spendingRequest?: SpendingRequest;
+}
+
+export interface EmployeeSpendRecord {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+  departmentId: string;
+  role: string;
+  committedSpend: number;
+  settledSpend: number;
+  obligatedSpend: number;
+  requestCount: number;
+  transactionCount: number;
+  averageTicketSize: number;
+  thresholdStatus: 'WITHIN_TYPICAL' | 'ELEVATED' | 'OUTLIER_THRESHOLD';
+  categoryBreakdown: Record<string, number>;
+}
+
+export interface EmployeeAnalyticsSummary {
+  topSpendingEmployee: {
+    name: string;
+    amount: number;
+    department: string;
+  } | null;
+  averageSpendPerEmployee: number;
+  activeRequestersCount: number;
+  anomalousRequestsCount: number;
+  categoryList: string[];
+  employees: EmployeeSpendRecord[];
+  departmentBreakdown: Array<{
+    department: string;
+    spend: number;
+  }>;
 }
 
 export interface Alert {

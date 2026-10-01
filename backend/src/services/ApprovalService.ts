@@ -63,10 +63,10 @@ export class ApprovalService {
         );
       }
 
-      // 2. Prevent self-approval
-      if (request.employeeId === user.id && user.role !== RoleType.ADMIN) {
+      // 2. Strict Self-Approval Prevention (Enforced for all roles)
+      if (request.employeeId === user.id) {
         throw new AppError(
-          'Self-approval violation: Users cannot approve their own spending requests.',
+          'Self-approval violation: Users cannot approve their own spending requests under ATCS corporate governance.',
           403,
           'SELF_APPROVAL_PROHIBITED',
           'A separate manager or authorized finance officer must review this request.'

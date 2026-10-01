@@ -139,12 +139,46 @@ export class ClientBudgetService {
       )}% (₹${estimatedProfitAtCompletion.toFixed(2)} projected net).`;
     }
 
-    // 6. Department-by-Department Individual Expense Tracking
-    // Query ALL departments to ensure every single department is accounted for
-    const allDepartments = await prisma.department.findMany({
-      where: { status: 'ACTIVE' },
-      orderBy: { name: 'asc' },
-    });
+    // 6. Department-by-Department Individual Expense Tracking (Batched)
+    const [allDepartments, deptTxGroups, activeCommitments] = await Promise.all([
+      prisma.department.findMany({
+        where: { status: 'ACTIVE' },
+        orderBy: { name: 'asc' },
+      }),
+      prisma.transaction.groupBy({
+        by: ['departmentId'],
+        where: { status: { not: 'REVERSED' } },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      prisma.commitment.findMany({
+        where: { status: { in: ['ACTIVE', 'PARTIALLY_SETTLED'] } },
+        select: {
+          remainingAmount: true,
+          spendingRequest: { select: { departmentId: true } },
+        },
+      }),
+    ]);
+
+    const deptActualMap = new Map<string, Decimal>();
+    const deptTxCountMap = new Map<string, number>();
+    for (const g of deptTxGroups) {
+      if (g.departmentId) {
+        if (g._sum.amount) deptActualMap.set(g.departmentId, new Decimal(g._sum.amount.toString()));
+        deptTxCountMap.set(g.departmentId, g._count || 0);
+      }
+    }
+
+    const deptCommitMap = new Map<string, Decimal>();
+    const deptCommitCountMap = new Map<string, number>();
+    for (const c of activeCommitments) {
+      if (c.spendingRequest?.departmentId) {
+        const dId = c.spendingRequest.departmentId;
+        const rem = new Decimal(c.remainingAmount.toString());
+        deptCommitMap.set(dId, (deptCommitMap.get(dId) || new Decimal(0)).plus(rem));
+        deptCommitCountMap.set(dId, (deptCommitCountMap.get(dId) || 0) + 1);
+      }
+    }
 
     const departmentAnalytics = [];
 
@@ -158,31 +192,8 @@ export class ClientBudgetService {
         ? new Decimal(alloc.targetMarginPct.toString())
         : targetMarginPct;
 
-      // Actual Settled Expenses for this department
-      const deptTx = await prisma.transaction.aggregate({
-        where: {
-          departmentId: dept.id,
-          status: { not: 'REVERSED' },
-        },
-        _sum: { amount: true },
-        _count: true,
-      });
-      const deptActual = deptTx._sum.amount
-        ? new Decimal(deptTx._sum.amount.toString())
-        : new Decimal(0);
-
-      // Committed Expenses for this department
-      const deptCommit = await prisma.commitment.aggregate({
-        where: {
-          status: { in: ['ACTIVE', 'PARTIALLY_SETTLED'] },
-          spendingRequest: { departmentId: dept.id },
-        },
-        _sum: { remainingAmount: true },
-        _count: true,
-      });
-      const deptCommitted = deptCommit._sum.remainingAmount
-        ? new Decimal(deptCommit._sum.remainingAmount.toString())
-        : new Decimal(0);
+      const deptActual = deptActualMap.get(dept.id) || new Decimal(0);
+      const deptCommitted = deptCommitMap.get(dept.id) || new Decimal(0);
 
       // Total Incurred for this department
       const deptIncurred = deptActual.plus(deptCommitted);
@@ -233,8 +244,8 @@ export class ClientBudgetService {
         estimatedCostAtCompletion: toDecimalNumber(deptEac),
         varianceAtCompletion: toDecimalNumber(deptVac),
         status: deptStatus,
-        transactionCount: deptTx._count,
-        commitmentCount: deptCommit._count,
+        transactionCount: deptTxCountMap.get(dept.id) || 0,
+        commitmentCount: deptCommitCountMap.get(dept.id) || 0,
       });
     }
 

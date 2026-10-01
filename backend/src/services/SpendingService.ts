@@ -5,6 +5,7 @@ import {
   DecisionVerdict,
   AlertSeverity,
   RoleType,
+  ExceptionDecision,
 } from '../models/types';
 import Decimal from 'decimal.js';
 import { SpendDecisionEngine } from './SpendDecisionEngine';
@@ -21,6 +22,8 @@ export interface CreateSpendingInput {
   currency?: string;
   vendor: string;
   description: string;
+  departmentId?: string;
+  overrideToken?: string | null;
 }
 
 export class SpendingService {
@@ -29,17 +32,26 @@ export class SpendingService {
    * Pure calculation preview without mutating database state.
    */
   public static async previewSpend(data: CreateSpendingInput, user: AuthUser) {
-    if (!user.departmentId) {
-      throw new AppError(
-        'User profile has no associated department.',
-        400,
-        'NO_DEPARTMENT_ASSIGNED',
-        'Assign a department to user before simulating spending.'
-      );
+    let departmentId = data.departmentId || user.departmentId;
+    if (!departmentId) {
+      const activeDept =
+        (await prisma.department.findFirst({
+          where: { status: 'ACTIVE', budgets: { some: { status: 'ACTIVE' } } },
+        })) || (await prisma.department.findFirst({ where: { status: 'ACTIVE' } }));
+
+      if (!activeDept) {
+        throw new AppError(
+          'User profile has no associated department.',
+          400,
+          'NO_DEPARTMENT_ASSIGNED',
+          'Assign a department to user before simulating spending.'
+        );
+      }
+      departmentId = activeDept.id;
     }
 
     const department = await prisma.department.findUnique({
-      where: { id: user.departmentId },
+      where: { id: departmentId },
     });
     if (!department) {
       throw new AppError('Department not found.', 404, 'DEPARTMENT_NOT_FOUND');
@@ -53,10 +65,10 @@ export class SpendingService {
     }
 
     // Load active budget
-    const budget = await BudgetService.getActiveBudgetForDepartment(user.departmentId);
+    const budget = await BudgetService.getActiveBudgetForDepartment(departmentId);
 
     // Calculate latest actual and committed spend
-    const totals = await BudgetService.calculateSpendTotals(user.departmentId, data.categoryId);
+    const totals = await BudgetService.calculateSpendTotals(departmentId, data.categoryId);
 
     // Load configured rules
     const [approvalRules, budgetRules] = await Promise.all([
@@ -75,7 +87,7 @@ export class SpendingService {
       employee: {
         id: user.id,
         role: user.role,
-        departmentId: user.departmentId,
+        departmentId: departmentId,
       },
       department: {
         id: department.id,
@@ -102,6 +114,7 @@ export class SpendingService {
       committedSpend: totals.committedSpend,
       approvalRules: approvalRules.map((r) => ({ ...r, requiredRole: r.requiredRole as RoleType })),
       budgetRules,
+      overrideToken: data.overrideToken,
     });
 
     return evaluation;
@@ -112,11 +125,19 @@ export class SpendingService {
    * Runs the full SpendDecisionEngine authoritative pipeline inside a PostgreSQL transaction.
    */
   public static async createSpendingRequest(data: CreateSpendingInput, user: AuthUser) {
-    if (!user.departmentId) {
-      throw new AppError('User has no department assigned.', 400, 'NO_DEPARTMENT');
+    let departmentId = data.departmentId || user.departmentId;
+    if (!departmentId) {
+      const activeDept =
+        (await prisma.department.findFirst({
+          where: { status: 'ACTIVE', budgets: { some: { status: 'ACTIVE' } } },
+        })) || (await prisma.department.findFirst({ where: { status: 'ACTIVE' } }));
+
+      if (!activeDept) {
+        throw new AppError('User has no department assigned.', 400, 'NO_DEPARTMENT');
+      }
+      departmentId = activeDept.id;
     }
 
-    const departmentId = user.departmentId;
     const reqAmount = new Decimal(data.requestedAmount);
 
     if (reqAmount.lessThanOrEqualTo(0)) {
@@ -200,6 +221,7 @@ export class SpendingService {
         committedSpend,
         approvalRules: approvalRules.map((r) => ({ ...r, requiredRole: r.requiredRole as RoleType })),
         budgetRules,
+        overrideToken: data.overrideToken,
       });
 
       // 6. Map verdict to spending request status
@@ -226,6 +248,24 @@ export class SpendingService {
         },
       });
 
+      // 7b. If Exception Rule was triggered, atomically register an Exception Override Request
+      let exceptionRecord = null;
+      if (verdict.exceptionTriggered) {
+        const exceptionReason = verdict.triggeredRules.length > 0
+          ? verdict.triggeredRules.map((r) => `[${r.ruleCode}] ${r.description}`).join('; ')
+          : 'Budget Exception Rule Triggered. Requires Director/Executive Sign-off.';
+
+        exceptionRecord = await tx.exception.create({
+          data: {
+            spendingRequestId: spendingRequest.id,
+            type: 'BUDGET_EXCEPTION_RULE_TRIGGERED',
+            reason: exceptionReason,
+            requestedBy: user.id,
+            decision: ExceptionDecision.PENDING,
+          },
+        });
+      }
+
       // 8. If APPROVED: Atomically create Commitment
       let commitment = null;
       if (verdict.decision === DecisionVerdict.APPROVE) {
@@ -239,7 +279,7 @@ export class SpendingService {
         });
       }
 
-      // 9. Persist Immutable DecisionSnapshot
+      // 9. Persist Immutable DecisionSnapshot with rich rule & compliance metadata
       const snapshot = await tx.decisionSnapshot.create({
         data: {
           spendingRequestId: spendingRequest.id,
@@ -255,7 +295,13 @@ export class SpendingService {
           budgetStatus: verdict.budgetStatus,
           violations: JSON.stringify(verdict.violations),
           warnings: JSON.stringify(verdict.warnings),
-          reasons: JSON.stringify(verdict.reasons),
+          reasons: JSON.stringify({
+            reasons: verdict.reasons,
+            complianceBadge: verdict.complianceBadge,
+            routeStatus: verdict.routeStatus,
+            exceptionTriggered: verdict.exceptionTriggered,
+            triggeredRules: verdict.triggeredRules,
+          }),
           engineVersion: verdict.engineVersion,
         },
       });
@@ -272,10 +318,14 @@ export class SpendingService {
             vendor: data.vendor,
             verdict: verdict.decision,
             status: initialStatus,
+            complianceBadge: verdict.complianceBadge,
+            routeStatus: verdict.routeStatus,
+            exceptionTriggered: verdict.exceptionTriggered,
           }),
           metadata: JSON.stringify({
             reasons: verdict.reasons,
             utilizationAfter: verdict.utilizationAfter,
+            triggeredRules: verdict.triggeredRules,
           }),
         },
       });
@@ -285,6 +335,7 @@ export class SpendingService {
         commitment,
         snapshot,
         verdict,
+        exceptionRecord,
       };
     });
 
@@ -298,6 +349,15 @@ export class SpendingService {
         relatedRequestId: result.spendingRequest.id,
         message: result.verdict.violations.join(' | ') || 'Spending request violated budget policy.',
       });
+    } else if (result.verdict.exceptionTriggered) {
+      await AlertService.createAlert({
+        type: 'BUDGET_EXCEPTION_FLAGGED',
+        severity: AlertSeverity.WARNING,
+        departmentId,
+        categoryId: data.categoryId,
+        relatedRequestId: result.spendingRequest.id,
+        message: result.verdict.reasons.join(' | ') || 'Spending request triggered an active budget exception rule.',
+      });
     } else if (result.verdict.utilizationAfter >= 80) {
       await AlertService.createAlert({
         type: 'BUDGET_NEAR_LIMIT',
@@ -310,13 +370,58 @@ export class SpendingService {
     }
 
     emitEvent('spending.created', result.spendingRequest, departmentId);
+    if (result.exceptionRecord) {
+      emitEvent('exception.created', result.exceptionRecord, departmentId);
+    }
     emitEvent('dashboard.updated', { departmentId });
 
     return result;
   }
 
   /**
-   * List spending requests filtered by permissions
+   * Helper to format compliance metadata from decision snapshot
+   */
+  private static formatRequestCompliance(req: any) {
+    let complianceBadge: 'EXCEPTION_FLAGGED' | 'OVERRIDE_REQUIRED' | 'AUTO_COMPLIANT' = 'AUTO_COMPLIANT';
+    let routeStatus = req.status as string;
+    let triggeredRules: any[] = [];
+    let exceptionTriggered = false;
+
+    if (req.decisionSnapshot?.reasons) {
+      try {
+        const parsed = JSON.parse(req.decisionSnapshot.reasons);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          complianceBadge = parsed.complianceBadge || complianceBadge;
+          routeStatus = parsed.routeStatus || routeStatus;
+          triggeredRules = parsed.triggeredRules || [];
+          exceptionTriggered = Boolean(parsed.exceptionTriggered);
+        }
+      } catch {
+        // Fallback for raw text reasons
+      }
+    }
+
+    // Default status-based fallbacks
+    if (req.status === SpendingStatus.REJECTED) {
+      complianceBadge = 'OVERRIDE_REQUIRED';
+    } else if (req.status === SpendingStatus.UNDER_REVIEW) {
+      complianceBadge = exceptionTriggered ? 'EXCEPTION_FLAGGED' : 'OVERRIDE_REQUIRED';
+      if (exceptionTriggered) {
+        routeStatus = 'PENDING_EXCEPTION_REVIEW';
+      }
+    }
+
+    return {
+      ...req,
+      complianceBadge,
+      routeStatus,
+      triggeredRules,
+      exceptionTriggered,
+    };
+  }
+
+  /**
+   * List spending requests filtered by permissions with compliance metadata
    */
   public static async getSpendingRequests(user: AuthUser, status?: SpendingStatus) {
     const where: any = {};
@@ -330,7 +435,7 @@ export class SpendingService {
       where.status = status;
     }
 
-    return prisma.spendingRequest.findMany({
+    const requests = await prisma.spendingRequest.findMany({
       where,
       include: {
         employee: { select: { id: true, name: true, email: true } },
@@ -338,12 +443,15 @@ export class SpendingService {
         category: true,
         commitment: true,
         decisionSnapshot: true,
+        exceptions: true,
         approvals: {
           include: { approver: { select: { id: true, name: true, email: true } } },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    return requests.map(this.formatRequestCompliance);
   }
 
   /**
@@ -358,6 +466,7 @@ export class SpendingService {
         category: true,
         commitment: true,
         decisionSnapshot: true,
+        exceptions: true,
         approvals: {
           include: { approver: { select: { id: true, name: true, email: true } } },
         },
@@ -368,6 +477,6 @@ export class SpendingService {
       throw new AppError('Spending request not found.', 404, 'REQUEST_NOT_FOUND');
     }
 
-    return req;
+    return this.formatRequestCompliance(req);
   }
 }

@@ -9,7 +9,7 @@ async function main() {
   console.log('🌱 Starting ATCS Enterprise Database Seeding...');
 
   // 1. Roles
-  const roles: RoleType[] = ['ADMIN', 'FINANCE', 'MANAGER', 'EMPLOYEE'];
+  const roles: RoleType[] = [RoleType.ADMIN, RoleType.FINANCE, RoleType.MANAGER, RoleType.EMPLOYEE];
   const roleMap: Record<string, string> = {};
 
   for (const r of roles) {

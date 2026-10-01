@@ -8,7 +8,7 @@ import { RoleType, ExceptionDecision } from '../models/types';
 const router = Router();
 
 const createExceptionSchema = z.object({
-  spendingRequestId: z.string().uuid(),
+  spendingRequestId: z.string().min(1),
   reason: z.string().min(5),
 });
 

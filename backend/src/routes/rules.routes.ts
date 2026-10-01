@@ -22,8 +22,8 @@ const approvalRuleSchema = z.object({
   minimumAmount: z.number().nonnegative(),
   maximumAmount: z.number().positive().optional().nullable(),
   requiredRole: z.enum(['EMPLOYEE', 'MANAGER', 'FINANCE', 'ADMIN']),
-  departmentId: z.string().uuid().optional().nullable(),
-  categoryId: z.string().uuid().optional().nullable(),
+  departmentId: z.string().min(1).optional().nullable(),
+  categoryId: z.string().min(1).optional().nullable(),
   enabled: z.boolean().default(true),
   priority: z.number().default(100),
 });

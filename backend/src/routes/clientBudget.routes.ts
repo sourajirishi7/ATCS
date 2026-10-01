@@ -14,7 +14,7 @@ const simulateSchema = z.object({
   departmentAllocations: z
     .array(
       z.object({
-        departmentId: z.string().uuid(),
+        departmentId: z.string().min(1),
         allocatedAmount: z.number().nonnegative(),
       })
     )
@@ -32,7 +32,7 @@ const createQuotationSchema = z.object({
   notes: z.string().optional(),
   allocations: z.array(
     z.object({
-      departmentId: z.string().uuid(),
+      departmentId: z.string().min(1),
       allocatedAmount: z.number().nonnegative(),
       targetMarginPct: z.number().min(0).max(100).optional(),
     })

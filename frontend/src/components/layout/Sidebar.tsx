@@ -59,11 +59,11 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 border-r border-slate-200 dark:border-slate-800/80 bg-white dark:bg-navy-900/60 backdrop-blur-md flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)]">
-      <div className="p-4 space-y-6 overflow-y-auto">
+    <aside className="fixed top-16 left-0 bottom-0 w-64 border-r border-slate-200 bg-white flex flex-col justify-between shrink-0 z-20 overflow-y-auto">
+      <div className="p-4 space-y-6 flex-1">
         {navSections.map((section) => (
           <div key={section.title} className="space-y-1">
-            <div className="text-[10px] font-mono tracking-wider font-semibold text-slate-500 dark:text-slate-400 px-3 uppercase mb-2">
+            <div className="text-[10px] font-mono tracking-wider font-semibold text-slate-500 px-3 uppercase mb-2">
               {section.title}
             </div>
             {section.items.map((item) => {
@@ -75,8 +75,8 @@ export const Sidebar: React.FC = () => {
                   className={({ isActive }) =>
                     `flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all duration-150 border ${
                       isActive
-                        ? 'bg-[#EEF2FF] text-[#4338CA] border-[#C7D2FE] font-bold shadow-xs dark:bg-indigo-600/20 dark:text-indigo-300 dark:border-indigo-500/30'
-                        : 'border-transparent text-[#1E293B] hover:text-[#4338CA] hover:bg-[#EEF2FF]/50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-navy-800/50 font-medium'
+                        ? 'bg-blue-50 text-blue-700 border-blue-200 font-bold shadow-xs'
+                        : 'border-transparent text-slate-700 hover:text-slate-900 hover:bg-slate-100 font-medium'
                     }`
                   }
                 >
@@ -85,13 +85,7 @@ export const Sidebar: React.FC = () => {
                     <span>{item.label}</span>
                   </div>
                   {item.badge && (
-                    <span
-                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold border ${
-                        item.badge === 'Flagship'
-                          ? 'bg-[#EEF2FF] text-[#4338CA] border-[#C7D2FE] dark:bg-indigo-500/20 dark:text-indigo-300 dark:border-indigo-500/30'
-                          : 'bg-[#ECFDF5] text-[#047857] border-[#A7F3D0] dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
-                      }`}
-                    >
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold border bg-blue-50 text-blue-700 border-blue-200">
                       {item.badge}
                     </span>
                   )}
@@ -103,9 +97,9 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Footer System Info */}
-      <div className="p-4 border-t border-slate-200 dark:border-slate-800/60 bg-slate-50 dark:bg-navy-950/40">
-        <div className="text-[11px] text-slate-600 dark:text-slate-400 font-mono font-medium">PostgreSQL Financial Engine</div>
-        <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Authoritative Backend Ledger</div>
+      <div className="p-4 border-t border-slate-200 bg-slate-50">
+        <div className="text-[11px] text-slate-600 font-mono font-medium">PostgreSQL Financial Engine</div>
+        <div className="text-[10px] text-slate-500 mt-0.5">Authoritative Backend Ledger</div>
       </div>
     </aside>
   );

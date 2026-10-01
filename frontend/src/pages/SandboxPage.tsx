@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../lib/api';
+import { useCurrency } from '../context/CurrencyContext';
 import {
   FlaskConical,
   CheckCircle2,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 
 export const SandboxPage: React.FC = () => {
+  const { formatCurrency } = useCurrency();
   const [activeScenario, setActiveScenario] = useState<'A' | 'B' | 'C' | null>(null);
   const [result, setResult] = useState<any | null>(null);
   const [running, setRunning] = useState(false);
@@ -47,8 +49,8 @@ export const SandboxPage: React.FC = () => {
         projected: 35000,
         expectedVerdict: 'APPROVE',
       },
-      color: 'border-emerald-500/30 hover:border-emerald-500/60 bg-emerald-500/5',
-      btnColor: 'bg-emerald-600 hover:bg-emerald-500',
+      color: 'border-slate-200 hover:border-blue-400 bg-white shadow-sm',
+      btnColor: 'bg-blue-600 hover:bg-blue-700',
     },
     {
       type: 'B' as const,
@@ -63,8 +65,8 @@ export const SandboxPage: React.FC = () => {
         projected: 90000,
         expectedVerdict: 'APPROVAL_REQUIRED',
       },
-      color: 'border-amber-500/30 hover:border-amber-500/60 bg-amber-500/5',
-      btnColor: 'bg-amber-600 hover:bg-amber-500',
+      color: 'border-slate-200 hover:border-slate-400 bg-white shadow-sm',
+      btnColor: 'bg-slate-700 hover:bg-slate-800',
     },
     {
       type: 'C' as const,
@@ -79,8 +81,8 @@ export const SandboxPage: React.FC = () => {
         projected: 110000,
         expectedVerdict: 'VIOLATION',
       },
-      color: 'border-rose-500/30 hover:border-rose-500/60 bg-rose-500/5',
-      btnColor: 'bg-rose-600 hover:bg-rose-500',
+      color: 'border-slate-200 hover:border-red-400 bg-white shadow-sm',
+      btnColor: 'bg-red-600 hover:bg-red-700',
     },
   ];
 
@@ -88,14 +90,14 @@ export const SandboxPage: React.FC = () => {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <div className="inline-flex items-center space-x-2 text-indigo-400 text-xs font-mono font-medium mb-1">
+        <div className="inline-flex items-center space-x-2 text-blue-600 text-xs font-mono font-medium mb-1">
           <FlaskConical className="w-4 h-4" />
           <span>VERIFICATION & EVALUATION SANDBOX</span>
         </div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
           Mandatory Demonstration Scenarios
         </h1>
-        <p className="text-xs md:text-sm text-slate-400 max-w-3xl">
+        <p className="text-xs md:text-sm text-slate-600 max-w-3xl">
           Execute the 3 core financial governance scenarios defined in the master specification. Each test runs the authoritative backend SpendDecisionEngine and proves explainability, priority resolution, and decimal accuracy.
         </p>
       </div>
@@ -105,37 +107,37 @@ export const SandboxPage: React.FC = () => {
         {scenarios.map((sc) => (
           <div
             key={sc.type}
-            className={`glass-panel p-6 rounded-2xl border transition-all ${sc.color} flex flex-col justify-between space-y-5`}
+            className={`p-6 rounded-2xl border transition-all ${sc.color} flex flex-col justify-between space-y-5`}
           >
             <div className="space-y-3">
-              <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-navy-950 border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300">
+              <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700">
                 {sc.badge}
               </span>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">{sc.title}</h2>
-              <p className="text-xs text-slate-600 dark:text-slate-400">{sc.desc}</p>
+              <h2 className="text-lg font-bold text-slate-900">{sc.title}</h2>
+              <p className="text-xs text-slate-600">{sc.desc}</p>
 
               {/* Parameter Table */}
-              <div className="p-3.5 rounded-xl bg-slate-100/80 dark:bg-navy-950/80 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs font-mono">
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs font-mono">
+                <div className="flex justify-between text-slate-600">
                   <span>Budget:</span>
-                  <span className="text-slate-900 dark:text-white font-bold">₹{sc.params.budget.toLocaleString()}</span>
+                  <span className="text-slate-900 font-bold">{formatCurrency(sc.params.budget)}</span>
                 </div>
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Actual Spend:</span>
-                  <span className="text-cyan-600 dark:text-cyan-400 font-bold">₹{sc.params.actual.toLocaleString()}</span>
+                  <span className="text-blue-700 font-bold">{formatCurrency(sc.params.actual)}</span>
                 </div>
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Committed Spend:</span>
-                  <span className="text-indigo-600 dark:text-indigo-400 font-bold">₹{sc.params.committed.toLocaleString()}</span>
+                  <span className="text-blue-600 font-bold">{formatCurrency(sc.params.committed)}</span>
                 </div>
-                <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Proposed Request:</span>
-                  <span className="text-slate-900 dark:text-white font-bold">₹{sc.params.request.toLocaleString()}</span>
+                  <span className="text-slate-900 font-bold">{formatCurrency(sc.params.request)}</span>
                 </div>
-                <div className="flex justify-between text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200 dark:border-slate-800">
+                <div className="flex justify-between text-slate-600 pt-1 border-t border-slate-200">
                   <span>Projected Spend:</span>
-                  <span className={sc.params.projected > sc.params.budget ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-200'}>
-                    ₹{sc.params.projected.toLocaleString()}
+                  <span className={sc.params.projected > sc.params.budget ? 'text-red-600 font-bold' : 'text-slate-700'}>
+                    {formatCurrency(sc.params.projected)}
                   </span>
                 </div>
               </div>
@@ -144,7 +146,7 @@ export const SandboxPage: React.FC = () => {
             <button
               onClick={() => runScenario(sc.type)}
               disabled={running}
-              className={`w-full py-3 rounded-xl text-white font-semibold text-xs shadow-md transition-all flex items-center justify-center space-x-2 ${sc.btnColor}`}
+              className={`w-full py-3 rounded-xl text-white font-semibold text-xs shadow-sm transition-all flex items-center justify-center space-x-2 ${sc.btnColor}`}
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>{running && activeScenario === sc.type ? 'Evaluating...' : `Run ${sc.badge}`}</span>
@@ -155,27 +157,27 @@ export const SandboxPage: React.FC = () => {
 
       {/* Live Engine Output Card */}
       {result && (
-        <div className="glass-panel p-6 rounded-2xl border border-indigo-500/30 space-y-6 bg-white dark:bg-navy-900/90 shadow-glow">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 space-y-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
             <div className="flex items-center space-x-3">
-              <div className="p-3 rounded-2xl bg-slate-100 dark:bg-navy-950 border border-slate-200 dark:border-slate-800">
-                <ShieldCheck className="w-6 h-6 text-indigo-400" />
+              <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200">
+                <ShieldCheck className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <span className="text-[10px] font-mono uppercase text-indigo-400 font-semibold">
+                <span className="text-[10px] font-mono uppercase text-blue-600 font-semibold">
                   SpendDecisionEngine Execution Result
                 </span>
-                <h3 className="text-xl font-bold text-white">{result.scenario.name}</h3>
+                <h3 className="text-xl font-bold text-slate-900">{result.scenario.name}</h3>
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-mono text-slate-400">Verdict Match:</span>
+              <span className="text-xs font-mono text-slate-600">Verdict Match:</span>
               <span
-                className={`px-3 py-1 rounded-full font-mono text-xs font-bold ${
+                className={`px-3 py-1 rounded-full font-mono text-xs font-bold border ${
                   result.verdictMatchesExpectation
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                    : 'bg-red-50 text-red-700 border-red-200'
                 }`}
               >
                 {result.verdictMatchesExpectation ? '✓ 100% SPEC VERIFIED' : 'MISMATCH'}
@@ -184,30 +186,30 @@ export const SandboxPage: React.FC = () => {
           </div>
 
           {/* Calculations Summary */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-navy-950 border border-slate-800 text-xs font-mono">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono">
             <div>
-              <span className="text-slate-400">Approved Budget</span>
-              <div className="text-base font-bold text-white mt-1">₹{result.evaluation.budgetAmount.toLocaleString()}</div>
+              <span className="text-slate-500">Approved Budget</span>
+              <div className="text-base font-bold text-slate-900 mt-1">{formatCurrency(result.evaluation.budgetAmount)}</div>
             </div>
             <div>
-              <span className="text-slate-400">Projected Total</span>
-              <div className="text-base font-bold text-indigo-300 mt-1">₹{result.evaluation.projectedSpend.toLocaleString()}</div>
+              <span className="text-slate-500">Projected Total</span>
+              <div className="text-base font-bold text-blue-700 mt-1">{formatCurrency(result.evaluation.projectedSpend)}</div>
             </div>
             <div>
-              <span className="text-slate-400">Utilization Impact</span>
-              <div className="text-base font-bold text-white mt-1">
+              <span className="text-slate-500">Utilization Impact</span>
+              <div className="text-base font-bold text-slate-900 mt-1">
                 {result.evaluation.utilizationBefore}% → {result.evaluation.utilizationAfter}%
               </div>
             </div>
             <div>
-              <span className="text-slate-400">Engine Verdict</span>
+              <span className="text-slate-500">Engine Verdict</span>
               <div
                 className={`text-base font-black mt-1 ${
                   result.evaluation.decision === 'APPROVE'
-                    ? 'text-emerald-400'
+                    ? 'text-blue-700'
                     : result.evaluation.decision === 'VIOLATION'
-                    ? 'text-rose-400'
-                    : 'text-amber-400'
+                    ? 'text-red-600'
+                    : 'text-slate-800'
                 }`}
               >
                 {result.evaluation.decision}
@@ -217,20 +219,20 @@ export const SandboxPage: React.FC = () => {
 
           {/* Visual Formula Display for Scenario C */}
           {result.evaluation.decision === 'VIOLATION' && (
-            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 space-y-2">
-              <div className="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="p-4 rounded-xl bg-red-50 border border-red-200 space-y-2">
+              <div className="text-xs font-mono font-bold text-red-700 uppercase tracking-wider flex items-center gap-1.5">
                 <AlertOctagon className="w-4 h-4" /> Explainable Mathematical Breakdown
               </div>
-              <div className="p-3 rounded-lg bg-navy-950 border border-slate-800 text-xs font-mono text-slate-200 space-y-1">
-                <div>₹{result.evaluation.actualSpend.toLocaleString()} (Actual Settled)</div>
-                <div>+ ₹{result.evaluation.committedSpend.toLocaleString()} (Existing Commitments)</div>
-                <div>+ ₹{result.evaluation.requestedAmount.toLocaleString()} (Proposed Request)</div>
-                <div className="pt-1 border-t border-slate-700 font-bold text-white">
-                  = ₹{result.evaluation.projectedSpend.toLocaleString()} Projected Spend
+              <div className="p-3 rounded-lg bg-white border border-red-100 text-xs font-mono text-slate-700 space-y-1">
+                <div>{formatCurrency(result.evaluation.actualSpend)} (Actual Settled)</div>
+                <div>+ {formatCurrency(result.evaluation.committedSpend)} (Existing Commitments)</div>
+                <div>+ {formatCurrency(result.evaluation.requestedAmount)} (Proposed Request)</div>
+                <div className="pt-1 border-t border-slate-200 font-bold text-slate-900">
+                  = {formatCurrency(result.evaluation.projectedSpend)} Projected Spend
                 </div>
-                <div className="text-rose-400 font-bold pt-1">
-                  Budget = ₹{result.evaluation.budgetAmount.toLocaleString()} → OVER BUDGET BY ₹
-                  {(result.evaluation.projectedSpend - result.evaluation.budgetAmount).toLocaleString()}
+                <div className="text-red-700 font-bold pt-1">
+                  Budget = {formatCurrency(result.evaluation.budgetAmount)} → OVER BUDGET BY{' '}
+                  {formatCurrency(result.evaluation.projectedSpend - result.evaluation.budgetAmount)}
                 </div>
               </div>
             </div>
@@ -238,16 +240,16 @@ export const SandboxPage: React.FC = () => {
 
           {/* Audit Reasons */}
           <div className="space-y-1.5 text-xs">
-            <span className="font-semibold text-slate-300">Recorded Audit Reasons & Rules</span>
-            <div className="p-3 rounded-lg bg-navy-950 border border-slate-800 text-slate-300 text-[11px] font-mono space-y-1">
+            <span className="font-semibold text-slate-700">Recorded Audit Reasons & Rules</span>
+            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-mono space-y-1">
               {result.evaluation.reasons.map((r: string, idx: number) => (
                 <div key={idx} className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
                   <span>{r}</span>
                 </div>
               ))}
               {result.evaluation.violations.map((v: string, idx: number) => (
-                <div key={`v-${idx}`} className="text-rose-400 font-medium">
+                <div key={`v-${idx}`} className="text-red-600 font-medium">
                   • {v}
                 </div>
               ))}

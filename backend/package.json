@@ -8,12 +8,24 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:migrate:dev": "prisma migrate dev",
     "prisma:push": "prisma db push",
-    "prisma:seed": "ts-node-dev prisma/seed.ts"
+    "prisma:status": "prisma migrate status",
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "ts-node-dev prisma/seed.ts",
+    "prisma:clear-mock": "ts-node-dev prisma/clear-mock-data.ts",
+    "test": "ts-node-dev tests/SpendDecisionEngine.test.ts",
+    "test:gemini": "npx ts-node tests/GeminiIntegration.test.ts",
+    "test:nova": "npx ts-node tests/GeminiIntegration.test.ts",
+    "verify:supabase": "ts-node-dev scripts/verify-supabase.ts"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@supabase/supabase-js": "^2.117.2",
     "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

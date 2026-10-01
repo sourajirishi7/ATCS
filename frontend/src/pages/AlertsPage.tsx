@@ -62,26 +62,26 @@ export const AlertsPage: React.FC = () => {
     switch (severity) {
       case 'CRITICAL':
         return {
-          border: 'border-rose-500/30',
-          bg: 'bg-rose-500/5',
-          text: 'text-rose-400',
-          badge: 'bg-rose-500/10 text-rose-400 border border-rose-500/30',
+          border: 'border-red-200',
+          bg: 'bg-red-50/60',
+          text: 'text-red-600',
+          badge: 'bg-red-50 text-red-700 border border-red-200',
           icon: AlertOctagon,
         };
       case 'WARNING':
         return {
-          border: 'border-amber-500/30',
-          bg: 'bg-amber-500/5',
-          text: 'text-amber-400',
-          badge: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
+          border: 'border-slate-300',
+          bg: 'bg-slate-50',
+          text: 'text-slate-800',
+          badge: 'bg-slate-100 text-slate-800 border border-slate-300',
           icon: AlertTriangle,
         };
       default:
         return {
-          border: 'border-indigo-500/30',
-          bg: 'bg-indigo-500/5',
-          text: 'text-indigo-400',
-          badge: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30',
+          border: 'border-blue-200',
+          bg: 'bg-blue-50/50',
+          text: 'text-blue-700',
+          badge: 'bg-blue-50 text-blue-700 border border-blue-200',
           icon: Info,
         };
     }
@@ -91,23 +91,25 @@ export const AlertsPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
-            <Bell className="w-6 h-6 text-amber-400" />
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <Bell className="w-6 h-6 text-blue-600" />
             <span>Real-Time Alert Center</span>
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500">
             Automated alerts dispatched on budget threshold breaches, unauthorized overages, or forecast violations.
           </p>
         </div>
 
         {/* Severity Filter Pills */}
-        <div className="flex items-center space-x-2 bg-navy-900 p-1 rounded-xl border border-slate-800">
+        <div className="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs">
           {['ALL', 'CRITICAL', 'WARNING', 'INFO'].map((sev) => (
             <button
               key={sev}
               onClick={() => setSeverityFilter(sev)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium font-mono transition-all ${
-                severityFilter === sev ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
+                severityFilter === sev
+                  ? 'bg-blue-600 text-white shadow-sm font-semibold'
+                  : 'text-slate-600 hover:text-slate-900 font-medium'
               }`}
             >
               {sev}
@@ -117,7 +119,7 @@ export const AlertsPage: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-slate-400 text-xs">Loading financial alerts...</div>
+        <div className="text-center py-12 text-slate-500 text-xs">Loading financial alerts...</div>
       ) : filteredAlerts.length > 0 ? (
         <div className="space-y-3">
           {filteredAlerts.map((alert) => {
@@ -128,10 +130,10 @@ export const AlertsPage: React.FC = () => {
             return (
               <div
                 key={alert.id}
-                className={`glass-panel p-5 rounded-2xl border ${style.border} ${style.bg} transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4`}
+                className={`p-5 rounded-2xl border ${style.border} ${style.bg} transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm`}
               >
                 <div className="flex items-start space-x-3.5">
-                  <div className="p-2.5 rounded-xl bg-navy-950 border border-slate-800 shadow-sm shrink-0">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 shadow-xs shrink-0">
                     <Icon className={`w-5 h-5 ${style.text}`} />
                   </div>
                   <div>
@@ -140,13 +142,13 @@ export const AlertsPage: React.FC = () => {
                         {alert.type}
                       </span>
                       {isResolved && (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 font-medium">
                           RESOLVED
                         </span>
                       )}
                     </div>
-                    <div className="text-sm font-semibold text-white mt-1.5">{alert.message}</div>
-                    <div className="flex items-center space-x-3 text-[11px] text-slate-400 font-mono mt-1">
+                    <div className="text-sm font-semibold text-slate-900 mt-1.5">{alert.message}</div>
+                    <div className="flex items-center space-x-3 text-[11px] text-slate-500 font-mono mt-1">
                       <span>Dept: {alert.department?.name}</span>
                       <span>•</span>
                       <span>{new Date(alert.createdAt).toLocaleString()}</span>
@@ -157,7 +159,7 @@ export const AlertsPage: React.FC = () => {
                 {!isResolved && (
                   <button
                     onClick={() => handleResolve(alert.id)}
-                    className="self-end sm:self-center px-3.5 py-1.5 rounded-xl bg-navy-900 hover:bg-navy-850 text-slate-300 hover:text-white text-xs font-medium border border-slate-700/80 transition-colors"
+                    className="self-end sm:self-center px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-medium border border-slate-200 shadow-xs transition-colors"
                   >
                     Acknowledge & Resolve
                   </button>
@@ -167,9 +169,9 @@ export const AlertsPage: React.FC = () => {
           })}
         </div>
       ) : (
-        <div className="glass-panel p-12 rounded-2xl border border-slate-800 text-center text-slate-400 space-y-2">
-          <CheckCircle2 className="w-10 h-10 text-emerald-400/50 mx-auto" />
-          <div className="text-sm font-semibold text-white">No Active Alerts</div>
+        <div className="p-12 rounded-2xl border border-slate-200 bg-white text-center text-slate-500 space-y-2 shadow-sm">
+          <CheckCircle2 className="w-10 h-10 text-blue-600 mx-auto" />
+          <div className="text-sm font-semibold text-slate-900">No Active Alerts</div>
           <p className="text-xs">All departmental metrics are operating within configured policy thresholds.</p>
         </div>
       )}
