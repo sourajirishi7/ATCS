@@ -274,3 +274,20 @@ export interface DashboardSummary {
   }>;
   hasData: boolean;
 }
+
+export interface EmployeeSummary {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+  status: string;
+  totalRequests: number;
+  totalCommitted: number;
+  recentActivity: Array<{
+    id: string;
+    amount: number;
+    status: string;
+    date: string;
+    description: string;
+  }>;
+}

@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { ForecastService } from '../services/ForecastService';
-import { authenticate, AuthenticatedRequest } from '../middleware/auth';
+import { authenticate, authorizeRoles, AuthenticatedRequest } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
+import { RoleType } from '../models/types';
 
 const router = Router();
 
@@ -12,7 +13,7 @@ const recalcSchema = z.object({
 });
 
 // Get or trigger forecast evaluation
-router.get('/', authenticate, async (req: AuthenticatedRequest, res, next) => {
+router.get('/', authenticate, authorizeRoles(RoleType.MANAGER, RoleType.ADMIN), async (req: AuthenticatedRequest, res, next) => {
   try {
     const departmentId =
       (req.query.departmentId as string) || req.user?.departmentId;
@@ -31,7 +32,7 @@ router.get('/', authenticate, async (req: AuthenticatedRequest, res, next) => {
 });
 
 // Force recalculate
-router.post('/recalculate', authenticate, validateBody(recalcSchema), async (req, res, next) => {
+router.post('/recalculate', authenticate, authorizeRoles(RoleType.MANAGER, RoleType.ADMIN), validateBody(recalcSchema), async (req, res, next) => {
   try {
     const result = await ForecastService.evaluateDepartmentForecast(
       req.body.departmentId,

@@ -16,6 +16,8 @@ const spendingSchema = z.object({
   description: z.string().min(3),
   departmentId: z.string().min(1).optional(),
   overrideToken: z.string().optional().nullable(),
+  customCategory: z.string().optional(),
+  customDepartment: z.string().optional(),
 });
 
 // Live Spend Decision Preview ("Spend Before You Spend")

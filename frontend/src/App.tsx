@@ -16,6 +16,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ de
 const SpendPreviewPage = lazy(() => import('./pages/SpendPreviewPage').then(m => ({ default: m.SpendPreviewPage })));
 const SpendRequestsPage = lazy(() => import('./pages/SpendRequestsPage').then(m => ({ default: m.SpendRequestsPage })));
 const ApprovalsPage = lazy(() => import('./pages/ApprovalsPage').then(m => ({ default: m.ApprovalsPage })));
+const EmployeesPage = lazy(() => import('./pages/EmployeesPage').then(m => ({ default: m.EmployeesPage })));
 const BudgetsPage = lazy(() => import('./pages/BudgetsPage').then(m => ({ default: m.BudgetsPage })));
 const ClientBudgetPage = lazy(() => import('./pages/ClientBudgetPage').then(m => ({ default: m.ClientBudgetPage })));
 const TransactionsPage = lazy(() => import('./pages/TransactionsPage').then(m => ({ default: m.TransactionsPage })));
@@ -105,6 +106,14 @@ export const App: React.FC = () => {
                     element={
                       <Suspense fallback={<ModuleLoadingFallback />}>
                         <ApprovalsPage />
+                      </Suspense>
+                    }
+                  />
+                  <Route
+                    path="employees"
+                    element={
+                      <Suspense fallback={<ModuleLoadingFallback />}>
+                        <EmployeesPage />
                       </Suspense>
                     }
                   />

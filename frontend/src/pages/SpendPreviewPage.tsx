@@ -37,6 +37,9 @@ export const SpendPreviewPage: React.FC = () => {
   const [overrideToken, setOverrideToken] = useState('');
   const [showOverrideInput, setShowOverrideInput] = useState(false);
   
+  const [customDepartment, setCustomDepartment] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
+
   const [preview, setPreview] = useState<DecisionEvaluationOutput | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -49,14 +52,19 @@ export const SpendPreviewPage: React.FC = () => {
           api.get<Category[]>('/categories'),
           api.get<Department[]>('/departments'),
         ]);
-        setCategories(cats);
-        if (cats.length > 0) setSelectedCategory(cats[0].id);
+        
+        const filteredCats = cats.filter(c => !c.code.startsWith('VFY_CAT_'));
+        const catsWithOther = [...filteredCats, { id: 'OTH', name: 'Other (OTH)', code: 'OTH', status: 'ACTIVE' } as Category];
+        setCategories(catsWithOther);
+        if (catsWithOther.length > 0) setSelectedCategory(catsWithOther[0].id);
 
-        setDepartments(depts);
+        const filteredDepts = depts.filter(d => !d.code.startsWith('VFY_CAT_'));
+        const deptsWithOther = [...filteredDepts, { id: 'OTH', name: 'Other (OTH)', code: 'OTH', status: 'ACTIVE' } as Department];
+        setDepartments(deptsWithOther);
         if (user?.departmentId) {
           setSelectedDepartment(user.departmentId);
-        } else if (depts.length > 0) {
-          setSelectedDepartment(depts[0].id);
+        } else if (deptsWithOther.length > 0) {
+          setSelectedDepartment(deptsWithOther[0].id);
         }
       } catch (err) {
         console.error('Failed to load form metadata', err);
@@ -83,6 +91,8 @@ export const SpendPreviewPage: React.FC = () => {
           vendor: vendor || 'Vendor',
           description: description || 'Spend simulation',
           overrideToken: overrideToken.trim() || undefined,
+          customCategory: selectedCategory === 'OTH' ? customCategory : undefined,
+          customDepartment: selectedDepartment === 'OTH' ? customDepartment : undefined,
         });
         setPreview(result);
       } catch (err: any) {
@@ -109,6 +119,8 @@ export const SpendPreviewPage: React.FC = () => {
         vendor,
         description,
         overrideToken: overrideToken.trim() || undefined,
+        customCategory: selectedCategory === 'OTH' ? customCategory : undefined,
+        customDepartment: selectedDepartment === 'OTH' ? customDepartment : undefined,
       });
 
       setFeedback({
@@ -229,10 +241,25 @@ export const SpendPreviewPage: React.FC = () => {
                 >
                   {departments.map((d) => (
                     <option key={d.id} value={d.id}>
-                      {d.name} ({d.code})
+                      {d.name} {d.code !== 'OTH' ? `(${d.code})` : ''}
                     </option>
                   ))}
                 </select>
+                
+                {selectedDepartment === 'OTH' && (
+                  <div className="mt-2 animate-in fade-in slide-in-from-top-1">
+                    <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                      Specify Department
+                    </label>
+                    <input
+                      type="text"
+                      value={customDepartment}
+                      onChange={(e) => setCustomDepartment(e.target.value)}
+                      placeholder="Please describe the department"
+                      className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -248,10 +275,25 @@ export const SpendPreviewPage: React.FC = () => {
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} ({c.code})
+                    {c.name} {c.code !== 'OTH' ? `(${c.code})` : ''}
                   </option>
                 ))}
               </select>
+
+              {selectedCategory === 'OTH' && (
+                <div className="mt-2 animate-in fade-in slide-in-from-top-1">
+                  <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                    Specify Expense Category
+                  </label>
+                  <input
+                    type="text"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    placeholder="Please describe the category"
+                    className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Requested Amount */}

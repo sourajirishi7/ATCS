@@ -15,6 +15,7 @@ import {
   Sliders,
   FlaskConical,
   Briefcase,
+  Users,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -29,6 +30,9 @@ export const Sidebar: React.FC = () => {
         { to: '/spend/preview', label: 'Spend Simulator', icon: Sparkles, badge: 'Flagship' },
         { to: '/spend', label: 'Spend Requests', icon: FileSpreadsheet },
         { to: '/approvals', label: 'Approvals Queue', icon: CheckCircle2 },
+        ...(user?.role === 'MANAGER' || user?.role === 'ADMIN'
+          ? [{ to: '/employees', label: 'Team & Employees', icon: Users }]
+          : []),
       ],
     },
     {

@@ -24,6 +24,8 @@ export interface CreateSpendingInput {
   description: string;
   departmentId?: string;
   overrideToken?: string | null;
+  customCategory?: string;
+  customDepartment?: string;
 }
 
 export class SpendingService {
@@ -33,6 +35,15 @@ export class SpendingService {
    */
   public static async previewSpend(data: CreateSpendingInput, user: AuthUser) {
     let departmentId = data.departmentId || user.departmentId;
+
+    if (departmentId === 'OTH') {
+      const fallbackDept = await prisma.department.findFirst({ where: { status: 'ACTIVE' } });
+      if (fallbackDept) {
+        departmentId = fallbackDept.id;
+        data.description = `${data.description}\n[Custom Department: ${data.customDepartment || 'Unknown'}]`;
+      }
+    }
+
     if (!departmentId) {
       const activeDept =
         (await prisma.department.findFirst({
@@ -57,8 +68,17 @@ export class SpendingService {
       throw new AppError('Department not found.', 404, 'DEPARTMENT_NOT_FOUND');
     }
 
+    let categoryId = data.categoryId;
+    if (categoryId === 'OTH') {
+      const fallbackCat = await prisma.category.findFirst({ where: { status: 'ACTIVE' } });
+      if (fallbackCat) {
+        categoryId = fallbackCat.id;
+        data.description = `${data.description}\n[Custom Category: ${data.customCategory || 'Unknown'}]`;
+      }
+    }
+
     const category = await prisma.category.findUnique({
-      where: { id: data.categoryId },
+      where: { id: categoryId },
     });
     if (!category) {
       throw new AppError('Expense category not found.', 404, 'CATEGORY_NOT_FOUND');
@@ -68,7 +88,7 @@ export class SpendingService {
     const budget = await BudgetService.getActiveBudgetForDepartment(departmentId);
 
     // Calculate latest actual and committed spend
-    const totals = await BudgetService.calculateSpendTotals(departmentId, data.categoryId);
+    const totals = await BudgetService.calculateSpendTotals(departmentId, categoryId);
 
     // Load configured rules
     const [approvalRules, budgetRules] = await Promise.all([
@@ -79,7 +99,7 @@ export class SpendingService {
     // Find category allocation if exists
     let catAlloc = null;
     if (budget) {
-      const match = budget.allocations.find((a) => a.categoryId === data.categoryId);
+      const match = budget.allocations.find((a) => a.categoryId === categoryId);
       if (match) catAlloc = match.allocatedAmount;
     }
 
@@ -126,6 +146,15 @@ export class SpendingService {
    */
   public static async createSpendingRequest(data: CreateSpendingInput, user: AuthUser) {
     let departmentId = data.departmentId || user.departmentId;
+
+    if (departmentId === 'OTH') {
+      const fallbackDept = await prisma.department.findFirst({ where: { status: 'ACTIVE' } });
+      if (fallbackDept) {
+        departmentId = fallbackDept.id;
+        data.description = `${data.description}\n[Custom Department: ${data.customDepartment || 'Unknown'}]`;
+      }
+    }
+
     if (!departmentId) {
       const activeDept =
         (await prisma.department.findFirst({
@@ -136,6 +165,15 @@ export class SpendingService {
         throw new AppError('User has no department assigned.', 400, 'NO_DEPARTMENT');
       }
       departmentId = activeDept.id;
+    }
+
+    let categoryId = data.categoryId;
+    if (categoryId === 'OTH') {
+      const fallbackCat = await prisma.category.findFirst({ where: { status: 'ACTIVE' } });
+      if (fallbackCat) {
+        categoryId = fallbackCat.id;
+        data.description = `${data.description}\n[Custom Category: ${data.customCategory || 'Unknown'}]`;
+      }
     }
 
     const reqAmount = new Decimal(data.requestedAmount);
@@ -149,7 +187,7 @@ export class SpendingService {
       // 1. Fetch department & category
       const [department, category] = await Promise.all([
         tx.department.findUnique({ where: { id: departmentId } }),
-        tx.category.findUnique({ where: { id: data.categoryId } }),
+        tx.category.findUnique({ where: { id: categoryId } }),
       ]);
 
       if (!department) throw new AppError('Department not found.', 404, 'DEPARTMENT_NOT_FOUND');
@@ -197,7 +235,7 @@ export class SpendingService {
 
       let catAlloc = null;
       if (budget) {
-        const match = budget.allocations.find((a) => a.categoryId === data.categoryId);
+        const match = budget.allocations.find((a) => a.categoryId === categoryId);
         if (match) catAlloc = match.allocatedAmount;
       }
 
@@ -239,7 +277,7 @@ export class SpendingService {
         data: {
           employeeId: user.id,
           departmentId,
-          categoryId: data.categoryId,
+          categoryId: categoryId,
           requestedAmount: reqAmount,
           currency: data.currency || 'INR',
           description: data.description,
@@ -345,7 +383,7 @@ export class SpendingService {
         type: 'BUDGET_EXCEEDED',
         severity: AlertSeverity.CRITICAL,
         departmentId,
-        categoryId: data.categoryId,
+        categoryId: categoryId,
         relatedRequestId: result.spendingRequest.id,
         message: result.verdict.violations.join(' | ') || 'Spending request violated budget policy.',
       });
@@ -354,7 +392,7 @@ export class SpendingService {
         type: 'BUDGET_EXCEPTION_FLAGGED',
         severity: AlertSeverity.WARNING,
         departmentId,
-        categoryId: data.categoryId,
+        categoryId: categoryId,
         relatedRequestId: result.spendingRequest.id,
         message: result.verdict.reasons.join(' | ') || 'Spending request triggered an active budget exception rule.',
       });
@@ -363,7 +401,7 @@ export class SpendingService {
         type: 'BUDGET_NEAR_LIMIT',
         severity: AlertSeverity.WARNING,
         departmentId,
-        categoryId: data.categoryId,
+        categoryId: categoryId,
         relatedRequestId: result.spendingRequest.id,
         message: `Department budget has reached ${result.verdict.utilizationAfter.toFixed(1)}% utilization.`,
       });

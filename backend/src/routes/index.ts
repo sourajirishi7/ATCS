@@ -18,6 +18,7 @@ import sandboxRoutes from './sandbox.routes';
 import clientBudgetRoutes from './clientBudget.routes';
 import documentRoutes from './documents.routes';
 import aiRoutes from './ai.routes';
+import usersRoutes from './users.routes';
 import { requireDatabase } from '../lib/dbHealth';
 
 const router = Router();
@@ -50,6 +51,7 @@ router.use('/exceptions', requireDatabase, exceptionRoutes);
 router.use('/sandbox', requireDatabase, sandboxRoutes);
 router.use('/client-budget', requireDatabase, clientBudgetRoutes);
 router.use('/ai', requireDatabase, aiRoutes);
+router.use('/users', requireDatabase, usersRoutes);
 router.use('/', requireDatabase, documentRoutes);
 
 export default router;
